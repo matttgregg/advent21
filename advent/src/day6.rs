@@ -2,18 +2,23 @@
 pub fn solve() {
     let data = include_str!("./data/day6.dat");
     let after80 = evolve(data, 80);
-    println!("After 80 days there are {} fish.", after80);
+    println!("[6] After 80 days there are {} fish.", after80);
     let after256 = evolve(data, 256);
-    println!("After 256 days there are {} fish.", after256);
+    println!("[6] After 256 days there are {} fish.", after256);
 }
 
-// Solve today with test data.
-pub fn solve_test() {
-    let data = include_str!("./data/test_day6.dat");
-    let after80 = evolve(data, 80);
-    println!("[TEST] After 80 days there are {} fish.", after80);
-    let after256 = evolve(data, 256);
-    println!("[TEST] After 256 days there are {} fish.", after256);
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_data() {
+        let data = include_str!("./data/test_day6.dat");
+        let after80 = evolve(data, 80);
+        let after256 = evolve(data, 256);
+        assert_eq!(after80, 5934);
+        assert_eq!(after256, 26984457539);
+    }
 }
 
 pub fn evolve(from: &str, generations: usize) -> u64 {

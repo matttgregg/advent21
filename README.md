@@ -21,6 +21,26 @@ Otherwise, keep your head and you'll be fine. Things to think about:
 Work out how to update this with each call and you're fine. There aren't that
 many boards, so worth spending extra memory if it keeps things simpler.
 
+### Day 5
+
+Keep calm and read the question carefully for this one. As usual the problem
+description can suggest inefficient ways to model.
+
+* You only need to worry about discrete points on the ocean floor. (This is
+particularly important for part 2).
+* Diagonals will *always* be at 45 degrees. This simplifies things a lot.
+* You probably don't need to map the whole ocean floor - unless you want a 
+visualization? Having said that the whole map isn't prohibitively large.
+
+Probably the biggest thing to note though is that you want to work on the 
+ocean map, rather than looking for crossings between lines. Having said that
+it depends on the data. In this case the lines are relatively 
+short, in terms of the points on the line. In a 
+different situation you might have very long lines (mm grid over km lengths?)
+and then looking for crossings would be more efficient. Always good to 
+do a quick run over data and think about where the big numbers will come
+from.
+
 ### Day 6
 
 This one follows the classic idea of 'model it properly and part 2 is trivial'.

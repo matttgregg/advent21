@@ -5,16 +5,22 @@ pub fn solve() {
     let test_data = include_str!("./data/day4.dat");
     let mut game = BingoGame::from_input(test_data);
     let (first, last) = game.play();
-    println!("First winning score is {}, last winning score is {}", first, last);
+    println!("[4] First winning score is {}, last winning score is {}", first, last);
 
 }
 
-// Solves the current day with test data.
-pub fn solve_test() {
-    let test_data = include_str!("./data/test_day4.dat");
-    let mut game = BingoGame::from_input(test_data);
-    let (first, last) = game.play();
-    println!("[TEST] First winning score is {}, last winning score is {}", first, last);
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_data() {
+        let test_data = include_str!("./data/test_day4.dat");
+        let mut game = BingoGame::from_input(test_data);
+        let (first, last) = game.play();
+        assert_eq!(first, 4512);
+        assert_eq!(last, 1924);
+    }
 }
 
 #[derive(Debug)]
