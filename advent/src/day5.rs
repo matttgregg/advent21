@@ -1,15 +1,22 @@
+use crate::utils;
+
+use std::time::SystemTime;
 use std::cmp::{min, max};
 use std::collections::HashMap;
 use std::str::FromStr;
 
 // Solve the day.
 pub fn solve() {
+    utils::print_day(5);
     let data = include_str!("./data/day5.dat");
+    let start = SystemTime::now();
     let connections: Vec<Connection> = data.lines().map(|s| s.parse::<Connection>().unwrap()).collect();
     let danger_points = crossings(&connections, false);
-    println!("[5] There are {} danger points.", danger_points);
     let diagonal_danger_points = crossings(&connections, true);
-    println!("[5] There are {} diagonal danger points.", diagonal_danger_points);
+    let timed = SystemTime::now().duration_since(start).unwrap();
+    println!("There are {} danger points.", utils::fmt_bright(&danger_points));
+    println!("There are {} diagonal danger points.", utils::fmt_bright(&diagonal_danger_points));
+    utils::print_duration(timed);
 }
 
 
@@ -20,6 +27,8 @@ mod tests {
     #[test]
     fn test_data() {
         let data = include_str!("./data/test_day5.dat");
+        let start = SystemTime::now();
+        let timed = SystemTime::now().duration_since(start).unwrap();
         let connections: Vec<Connection> = data.lines().map(|s| s.parse::<Connection>().unwrap()).collect();
         let danger_points = crossings(&connections, false);
         assert_eq!(danger_points, 5);

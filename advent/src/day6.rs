@@ -1,10 +1,17 @@
+use crate::utils;
+use std::time::SystemTime;
+
 // Solve today.
 pub fn solve() {
+    utils::print_day(6);
     let data = include_str!("./data/day6.dat");
+    let start = SystemTime::now();
     let after80 = evolve(data, 80);
-    println!("[6] After 80 days there are {} fish.", after80);
     let after256 = evolve(data, 256);
-    println!("[6] After 256 days there are {} fish.", after256);
+    let timed = SystemTime::now().duration_since(start).unwrap();
+    println!("After 80 days there are {} fish.", utils::fmt_bright(&after80));
+    println!("After 256 days there are {} fish.", utils::fmt_bright(&after256));
+    utils::print_duration(timed);
 }
 
 #[cfg(test)]
