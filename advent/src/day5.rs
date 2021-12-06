@@ -27,8 +27,6 @@ mod tests {
     #[test]
     fn test_data() {
         let data = include_str!("./data/test_day5.dat");
-        let start = SystemTime::now();
-        let timed = SystemTime::now().duration_since(start).unwrap();
         let connections: Vec<Connection> = data.lines().map(|s| s.parse::<Connection>().unwrap()).collect();
         let danger_points = crossings(&connections, false);
         assert_eq!(danger_points, 5);
