@@ -4,6 +4,36 @@
 Warning! Possible spoilers for advent of code solutions below.
 Mostly rust solutions for the excellent puzzle-athon.
 
+### Day 1
+
+Nice gentle warm up. Covers the basics of reading input,
+iterating over data.
+
+### Day 2
+
+Keep your head straight, follow the maths, and you'll be fine.
+As usual think about:
+
+* What 'state' do you need to keep track of?
+* How do you update that state?
+
+### Day 3
+
+This one was interesting - it felt quite novel. 
+The part 2 was a nice extension as well, adding
+more to think about.
+
+A few interesting things to think about:
+
+* Parsing 'binary' data. Depends on your language so
+always fun to play with.
+* How to identify 'most' and 'least' common. Lots of 
+scope for falling the wrong side of the boundaries. 
+Lots of scope for off-by-one errors.
+* How to do the problem efficiently? If you want to
+avoid running through your data multiple times,
+what do you need to keep track of?
+
 ### Day 4 
 
 This was a fun one, and leans heavily on how to represent the problem
@@ -25,6 +55,12 @@ many boards, so worth spending extra memory if it keeps things simpler.
 
 Keep calm and read the question carefully for this one. As usual the problem
 description can suggest inefficient ways to model.
+
+I've avoided so far wrting parsers. (And the problems 
+seem to need it a lot less than last year.) I took the
+opportunity to implement the `FromStr` trait for my data 
+types, keeping the parsing quite neat. (Thank you Rust!)
+
 
 * You only need to worry about discrete points on the ocean floor. (This is
 particularly important for part 2).
