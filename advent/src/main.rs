@@ -1,3 +1,6 @@
+mod day4;
+
 fn main() {
-    println!("Hello, world!");
+    day4::solve_test();
+    day4::solve();
 }
