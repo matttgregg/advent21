@@ -42,6 +42,10 @@ As usual, do the legwork to keep things tidy, and part 2 is trivial.
 Personally, I spent most of the time writing the parser, and tracking 
 down a counter that I'd put in at the wrong loop level.
 
+I'm not surprised that this day's stats shows a drop in completion - it's
+definitely meatier than the day before. We seem to be following the 'slightly
+harder bump at the weekends' tradition, which makes sense.
+
 Otherwise, keep your head and you'll be fine. Things to think about:
 
 * How do I know when a row is full? What do I need to track?
