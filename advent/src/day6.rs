@@ -30,29 +30,21 @@ mod tests {
 
 pub fn evolve(from: &str, generations: usize) -> u64 {
     // We store the day state as a vec of timers 0-8, plus 9:Birthed (which reset to 6)
-    let mut fishes = vec![0;10];
+    let mut fishes = vec![0u64;9];
     let mut total_fish = 0;
     // The input is a comma separated list of timers.
-    for c in from.split(",") {
-        let i = c.parse::<usize>().unwrap();
+    for i in from.split(",").map(|c| c.parse::<usize>().unwrap()) {
         fishes[i] = fishes[i] + 1;
         total_fish += 1;
     }
 
     // For sanity, we take gen 0 as our starting state.
     for _generation in 1..=generations {
-        // We push all 0 fish to 9 so as to avoid overwriting other fish.
-        fishes[9] = fishes[0];
-        // Now all timers evolve. Note that 8, new born fish are pulled in automatically.
-        for i in 0..=8 {
-            fishes[i] = fishes[i + 1];
-        }
-
-        // All the birthing fish reset to 6.
-        fishes[6] = fishes[6] + fishes[9];
-        total_fish += fishes[9];
-
-        //println!("Generation {} : {} fish.", generation, total_fish);
+        // Use built in rotate for vector.
+        fishes.rotate_left(1);
+        // All the birthing fish reset to 6 - these are the same as the fish that just gave birth, 0 -> 8.
+        fishes[6] = fishes[6] + fishes[8];
+        total_fish += fishes[8];
     }
 
     total_fish
