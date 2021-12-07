@@ -88,3 +88,30 @@ Like many of this sort of problem, the naive approach suggested in the problem
 description _maybe_ doesn't scale well.
 
 An observational hint - these lantern fish seem to live quite a solitary life.
+
+### Day 7
+
+This was an interesting one, and probably a bit more maths-y. First part is 
+frustratingly similar to the normal _least squares_ regression, where the 
+mean value minimizes the square distances.
+
+Of course the minimizing the square is not the same as minimizing the absolute
+distance so a few more thoughts are needed. The key question is:
+
+* If I have a target value, how does it change if I increase it?
+* And what if I decrease it?
+
+From there it's fairly short to convince yourself that you go down
+by the points you're moving towards, and up by the ones you're moving
+away from. And from that, you can deduce that the optimizing value is the
+median - although you still have to calculate that, and the minimized distances.
+
+Part two then flows naturally - how does the cost change when I 
+move? This then ends up being a bit more involved, but still managable
+by thinking about how things change at each step.
+
+It's interesting to think about what the traps being avoided are - for one
+you want to avoid recalculating the distance from n points every step (~ n^2).
+
+On the other hand I *did* do exactly that for tracking down a bug. The actual 
+updates to the costs is a bit fiddly! Anyway, all done and crabs away!
