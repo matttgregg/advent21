@@ -115,3 +115,28 @@ you want to avoid recalculating the distance from n points every step (~ n^2).
 
 On the other hand I *did* do exactly that for tracking down a bug. The actual 
 updates to the costs is a bit fiddly! Anyway, all done and crabs away!
+
+### Day 8
+
+The first part is simple, but the second part is significantly more difficult. 
+The first part does give a clue on how to handle the second part.
+
+There are multiple approaches, but it's one of those situations where a completely
+generic solution is complex. (Even working out how to describe the generic problem
+in code is complex!) So, many will fall back to a hand rolled solution based on 
+a few ideas:
+
+* Part 1 uniquely identifies some values as starters.
+* How can you identify the rest?
+* What are the intersections of digits like? Are some contained in others?
+* Are some the unions of other digits?
+* We don't have to just work with digits - maybe it's useful to find individual segments?
+* Are there any statistical properties to take advantage of? (e.g. how often a segment appears
+across all digits.)
+
+The only major alternative is the 'scan all possibilities and check if this produces valid
+digits' approach. This has to work (otherwise there's no unique decoding), but it is a lot
+more expensive. The number of segment permutation is finite, and not 
+insanely large so it is one of those days where a brute force approach will work.
+On the other hand, the code to generate the permutations and check validity is complicated
+enough that I'd hesitate to call the brute force approach the *easy* approach in this case!
