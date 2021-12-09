@@ -140,3 +140,18 @@ more expensive. The number of segment permutation is finite, and not
 insanely large so it is one of those days where a brute force approach will work.
 On the other hand, the code to generate the permutations and check validity is complicated
 enough that I'd hesitate to call the brute force approach the *easy* approach in this case!
+
+### Day 9
+
+I wondered if the calendar was starting to look a bit volcanic!
+Classic iteration over neighbours type question - I should probably think about
+making a library around this. (Or find an existing one!) 
+The problem itself is fairly OK if you've seen this sort of thing - explore the
+space, don't double count. Today the boundary conditions are fairly simple (extend
+up to '9's) - I think I remember previous years with similar questions but less
+obvious boundaries. There's still plenty of scope for complication.
+
+As usual my code for this is a bit ad-hoc, hard coding the four neighbours for
+each cell. It seems enough for today, but we might want something cleaner in 
+future if we hit more complex problems. (Memories of last year where 2D game of
+life quick evolved to n-dimensions, or extended neighbour patterns.)

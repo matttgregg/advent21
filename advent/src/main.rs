@@ -6,6 +6,7 @@ mod day5;
 mod day6;
 mod day7;
 mod day8;
+mod day9;
 mod utils;
 
 use std::env;
@@ -21,6 +22,7 @@ fn main() {
         Some(6) => day6::solve(),
         Some(7) => day7::solve(),
         Some(8) => day8::solve(),
+        Some(9) => day9::solve(),
         Some(0) | None => {
             day1::solve();
             day2::solve();
@@ -30,6 +32,7 @@ fn main() {
             day6::solve();
             day7::solve();
             day8::solve();
+            day9::solve();
         },
         Some(x) => { eprintln!("Unimplemented day {}", x); process::exit(1);},
     }
