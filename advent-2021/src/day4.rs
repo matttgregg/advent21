@@ -142,7 +142,7 @@ impl BingoGame {
         let mut current_board = Board::empty();
         let mut boards = vec![];
         let mut row = 0;
-        for line in inp.split("\n") {
+        for line in inp.lines() {
             match parse_mode {
                 ParsingMode::ParseCalls => {
                     // We expect a line of comma separated calls.

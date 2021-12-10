@@ -41,7 +41,7 @@ fn count_uniques(data: &str) -> i32 {
 }
 
 fn decode(data: &str) -> usize {
-    data.split("\n").map(|l| decode_line(l)).sum()
+    data.lines().map(|l| decode_line(l)).sum()
 }
 
 fn decode_line(data: &str) -> usize {

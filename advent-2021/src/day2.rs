@@ -41,7 +41,7 @@ mod tests {
 }
 
 pub fn horizontal_depth(data :&str) -> (i32, i32) {
-    let lines = data.split("\n");
+    let lines = data.lines();
     let mut depth = 0;
     let mut horizontal = 0;
     for line in lines {
@@ -61,7 +61,7 @@ pub fn horizontal_depth(data :&str) -> (i32, i32) {
 }
 
 pub fn aiming_horizontal_depth(data :&str) -> (i32, i32) {
-    let lines = data.split("\n");
+    let lines = data.lines();
     let mut depth = 0;
     let mut aim = 0;
     let mut horizontal = 0;

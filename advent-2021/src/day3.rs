@@ -45,7 +45,7 @@ mod tests {
 }
 
 pub fn epsilon_gamma(data :&str, length: usize) -> (i32, i32) {
-    let lines = data.split("\n");
+    let lines = data.lines();
     let mut line_count = 0;
     let mut counts = vec![0;length];
     for line in lines {
@@ -80,7 +80,7 @@ pub fn epsilon_gamma(data :&str, length: usize) -> (i32, i32) {
 }
 
 pub fn co2_scrubber(data: &str, length: usize) -> i32 {
-    let mut lines: Vec<&str> = data.split("\n").collect();
+    let mut lines: Vec<&str> = data.lines().collect();
 
     for i in 0..length {
         let mut upper = vec![];
@@ -110,7 +110,7 @@ pub fn co2_scrubber(data: &str, length: usize) -> i32 {
 }
 
 pub fn o2_generator(data: &str, length: usize) -> i32 {
-    let mut lines: Vec<&str> = data.split("\n").collect();
+    let mut lines: Vec<&str> = data.lines().collect();
 
     for i in 0..length {
         let mut upper = vec![];
