@@ -1,17 +1,25 @@
-use crate::utils;
 use std::time::SystemTime;
+use crate::{DayResult, DaySolver};
 
-// Solve today.
-pub fn solve() {
-    utils::print_day(6);
-    let data = include_str!("./data/day6.dat");
-    let start = SystemTime::now();
-    let after80 = evolve(data, 80);
-    let after256 = evolve(data, 256);
-    let timed = SystemTime::now().duration_since(start).unwrap();
-    println!("After 80 days there are {} fish.", utils::fmt_bright(&after80));
-    println!("After 256 days there are {} fish.", utils::fmt_bright(&after256));
-    utils::print_duration(timed);
+pub struct Day {}
+
+impl DaySolver for Day {
+    fn solve(&self) -> DayResult {
+        let data = include_str!("./data/day6.dat");
+        let start = SystemTime::now();
+        let after80 = evolve(data, 80);
+        let after256 = evolve(data, 256);
+        let timed = SystemTime::now().duration_since(start).unwrap();
+        let desc1 = format!("After 80 days there are {} fish.", after80);
+        let desc2 = format!("After 256 days there are {} fish.", after256);
+
+        DayResult{
+            description: format!("{}\n{}", desc1, desc2),
+            part1: format!("{}", after80),
+            part2: format!("{}", after256),
+            timing_us: timed.as_micros(),
+        }
+    }
 }
 
 #[cfg(test)]

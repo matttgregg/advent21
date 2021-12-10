@@ -1,16 +1,29 @@
-use crate::utils;
 use std::time::SystemTime;
+use crate::{DayResult, DaySolver};
 
-pub fn solve() {
-    utils::print_day(2);
-    let input = include_str!("data/day2.dat");
-    let start = SystemTime::now();
-    let (h1, d1) = horizontal_depth(input);
-    let (h2, d2) = aiming_horizontal_depth(input);
-    let timed = SystemTime::now().duration_since(start).unwrap();
-    println!("Reached distance {} and depth {} -> {}", h1, d1, utils::fmt_bright(&(h1 * d1)));
-    println!("Using corrected steering, reached distance {} and depth {} -> {}", h2, d2, utils::fmt_bright(&(h2 * d2)));
-    utils::print_duration(timed);
+pub struct Day {}
+
+impl DaySolver for Day {
+    fn solve(&self) -> DayResult {
+        let input = include_str!("data/day2.dat");
+        let start = SystemTime::now();
+        let (h1, d1) = horizontal_depth(input);
+        let (h2, d2) = aiming_horizontal_depth(input);
+        let timed = SystemTime::now().duration_since(start).unwrap();
+        let desc1 = format!("Reached distance {} and depth {} -> {}",
+                            h1, d1,
+                            h1 * d1);
+        let desc2 = format!("Using corrected steering, reached distance {} and depth {} -> {}",
+                            h2, d2,
+                            h2 * d2);
+
+        DayResult{
+            part1: format!("{}", h1 * d1),
+            part2: format!("{}", h2 * d2),
+            description: format!("{}\n{}", desc1, desc2),
+            timing_us: timed.as_micros(),
+        }
+    }
 }
 
 #[cfg(test)]

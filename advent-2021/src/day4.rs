@@ -1,20 +1,27 @@
-use crate::utils;
 use std::time::SystemTime;
 use std::collections::HashMap;
+use crate::{DayResult, DaySolver};
 
-// Solves the current day with full data
-pub fn solve() {
-    utils::print_day(4);
-    let test_data = include_str!("./data/day4.dat");
-    let mut game = BingoGame::from_input(test_data);
-    let start = SystemTime::now();
-    let (first, last) = game.play();
-    let timed = SystemTime::now().duration_since(start).unwrap();
-    println!("First winning score is {}, last winning score is {}",
-             utils::fmt_bright(&first),
-             utils::fmt_bright(&last));
+pub struct Day {}
 
-    utils::print_duration(timed);
+impl DaySolver for Day {
+    fn solve(&self) -> DayResult {
+        let test_data = include_str!("./data/day4.dat");
+        let mut game = BingoGame::from_input(test_data);
+        let start = SystemTime::now();
+        let (first, last) = game.play();
+        let timed = SystemTime::now().duration_since(start).unwrap();
+        let description = format!("First winning score is {}, last winning score is {}",
+                 first,
+                 last);
+
+        DayResult{
+            description,
+            part1: format!("{}", first),
+            part2: format!("{}", last),
+            timing_us: timed.as_micros(),
+        }
+    }
 }
 
 #[cfg(test)]

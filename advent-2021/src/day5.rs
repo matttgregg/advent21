@@ -1,22 +1,28 @@
-use crate::utils;
-
 use std::time::SystemTime;
 use std::cmp::{min, max};
 use std::collections::HashMap;
 use std::str::FromStr;
+use crate::{DayResult, DaySolver};
 
-// Solve the day.
-pub fn solve() {
-    utils::print_day(5);
-    let data = include_str!("./data/day5.dat");
-    let start = SystemTime::now();
-    let connections: Vec<Connection> = data.lines().map(|s| s.parse::<Connection>().unwrap()).collect();
-    let danger_points = crossings(&connections, false);
-    let diagonal_danger_points = crossings(&connections, true);
-    let timed = SystemTime::now().duration_since(start).unwrap();
-    println!("There are {} danger points.", utils::fmt_bright(&danger_points));
-    println!("There are {} diagonal danger points.", utils::fmt_bright(&diagonal_danger_points));
-    utils::print_duration(timed);
+pub struct Day {}
+
+impl DaySolver for Day {
+    fn solve(&self) -> DayResult {
+        let data = include_str!("./data/day5.dat");
+        let start = SystemTime::now();
+        let connections: Vec<Connection> = data.lines().map(|s| s.parse::<Connection>().unwrap()).collect();
+        let danger_points = crossings(&connections, false);
+        let diagonal_danger_points = crossings(&connections, true);
+        let timed = SystemTime::now().duration_since(start).unwrap();
+        let desc1 = format!("There are {} danger points.", danger_points);
+        let desc2 = format!("There are {} diagonal danger points.", diagonal_danger_points);
+        DayResult{
+            description: format!("{}\n{}", desc1, desc2),
+            part1: format!("{}", danger_points),
+            part2: format!("{}", diagonal_danger_points),
+            timing_us: timed.as_micros(),
+        }
+    }
 }
 
 

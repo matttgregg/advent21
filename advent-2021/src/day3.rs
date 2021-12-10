@@ -1,17 +1,30 @@
-use crate::utils;
 use std::time::SystemTime;
+use crate::{DayResult, DaySolver};
 
-pub fn solve() {
-    utils::print_day(3);
-    let data = include_str!("data/day3.dat");
-    let start = SystemTime::now();
-    let (epsilon, gamma) = epsilon_gamma(data, 12);
-    let o2 = o2_generator(data, 12);
-    let co2 = co2_scrubber(data, 12);
-    let timed = SystemTime::now().duration_since(start).unwrap();
-    println!("Analyzed logs. Epsilon = {}, Gamma = {} -> Power {}", epsilon, gamma, utils::fmt_bright(&(epsilon * gamma)));
-    println!("O2 Generator {}, CO2 Scrubber {} -> Life Support Rating {}", o2, co2, utils::fmt_bright(&(o2 * co2)));
-    utils::print_duration(timed);
+pub struct Day {}
+
+impl DaySolver for Day {
+    fn solve(&self) -> DayResult {
+        let data = include_str!("data/day3.dat");
+        let start = SystemTime::now();
+        let (epsilon, gamma) = epsilon_gamma(data, 12);
+        let o2 = o2_generator(data, 12);
+        let co2 = co2_scrubber(data, 12);
+        let timed = SystemTime::now().duration_since(start).unwrap();
+        let desc1 = format!("Analyzed logs. Epsilon = {}, Gamma = {} -> Power {}",
+                            epsilon, gamma,
+                            epsilon * gamma);
+        let desc2 = format!("O2 Generator {}, CO2 Scrubber {} -> Life Support Rating {}",
+                            o2, co2,
+                            o2 * co2);
+
+        DayResult{
+            description: format!("{}\n{}", desc1, desc2),
+            part1: format!("{}", epsilon * gamma),
+            part2: format!("{}", co2 * o2),
+            timing_us: timed.as_micros(),
+        }
+    }
 }
 
 #[cfg(test)]

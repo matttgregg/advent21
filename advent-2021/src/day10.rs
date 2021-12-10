@@ -1,15 +1,23 @@
-use crate::utils;
 use std::time::SystemTime;
+use crate::{DayResult, DaySolver};
 
-pub fn solve() {
-    utils::print_day(10);
-    let data = include_str!("data/day10.dat");
-    let start = SystemTime::now();
-    let (error_score, completion_score) = diagnose(data);
-    let timed = SystemTime::now().duration_since(start).unwrap();
-    println!("Error score of bad lines {}, completion score {}",
-             utils::fmt_bright(&error_score), utils::fmt_bright(&completion_score));
-    utils::print_duration(timed);
+pub struct Day {}
+
+impl DaySolver for Day {
+    fn solve(&self) -> DayResult {
+        let data = include_str!("data/day10.dat");
+        let start = SystemTime::now();
+        let (error_score, completion_score) = diagnose(data);
+        let timed = SystemTime::now().duration_since(start).unwrap();
+        let description = format!("Error score of bad lines {}, completion score {}",
+                                  error_score, completion_score);
+        DayResult{
+            description,
+            part1: format!("{}", error_score),
+            part2: format!("{}", completion_score),
+            timing_us: timed.as_micros(),
+        }
+    }
 }
 
 enum LineDiagnosis {

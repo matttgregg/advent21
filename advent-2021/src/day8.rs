@@ -1,17 +1,25 @@
-use crate::utils;
 use std::collections::HashMap;
 use std::time::SystemTime;
+use crate::{DayResult, DaySolver};
 
-pub fn solve() {
-    utils::print_day(8);
-    let data = include_str!("data/day8.dat");
-    let start = SystemTime::now();
-    let uniques = count_uniques(data);
-    let decoded_sum = decode(data);
-    let timed = SystemTime::now().duration_since(start).unwrap();
-    println!("Counting 1, 4, 7, 8 -> {}", utils::fmt_bright(&uniques));
-    println!("Fully decoded sum -> {}", utils::fmt_bright(&decoded_sum));
-    utils::print_duration(timed);
+pub struct Day {}
+
+impl DaySolver for Day {
+    fn solve(&self) -> DayResult {
+        let data = include_str!("data/day8.dat");
+        let start = SystemTime::now();
+        let uniques = count_uniques(data);
+        let decoded_sum = decode(data);
+        let timed = SystemTime::now().duration_since(start).unwrap();
+        let desc1 = format!("Counting 1, 4, 7, 8 -> {}", uniques);
+        let desc2 = format!("Fully decoded sum -> {}", decoded_sum);
+        DayResult{
+            description: format!("{}\n{}", desc1, desc2),
+            part1: format!("{}", uniques),
+            part2: format!("{}", decoded_sum),
+            timing_us: timed.as_micros(),
+        }
+    }
 }
 
 fn count_uniques(data: &str) -> i32 {

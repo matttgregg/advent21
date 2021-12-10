@@ -1,19 +1,27 @@
-use crate::utils;
 use std::collections::HashMap;
 use std::time::SystemTime;
+use crate::{DayResult, DaySolver};
 
-pub fn solve() {
-    utils::print_day(7);
-    let data = include_str!("data/day7.dat");
-    let crabs: Vec<i32> = data.split(",").map(|c| c.parse::<i32>().unwrap()).collect();
-    let start = SystemTime::now();
-    let (target, fuel) = least_fuel(&crabs);
-    let (target_crab, fuel_crab) = least_fuel_crabwise(&crabs);
-    let timed = SystemTime::now().duration_since(start).unwrap();
-    println!("The crabs can reach {} with {} fuel.", target, utils::fmt_bright(&fuel));
-    println!("In crab mode, the crabs can reach {} with {} fuel.",
-             target_crab, utils::fmt_bright(&fuel_crab));
-    utils::print_duration(timed);
+pub struct Day {}
+
+impl DaySolver for Day {
+    fn solve(&self) -> DayResult {
+        let data = include_str!("data/day7.dat");
+        let crabs: Vec<i32> = data.split(",").map(|c| c.parse::<i32>().unwrap()).collect();
+        let start = SystemTime::now();
+        let (target, fuel) = least_fuel(&crabs);
+        let (target_crab, fuel_crab) = least_fuel_crabwise(&crabs);
+        let timed = SystemTime::now().duration_since(start).unwrap();
+        let desc1 = format!("The crabs can reach {} with {} fuel.", target, fuel);
+        let desc2 = format!("In crab mode, the crabs can reach {} with {} fuel.",
+                 target_crab, fuel_crab);
+        DayResult{
+            description: format!("{}\n{}", desc1, desc2),
+            part1: format!("{}", fuel),
+            part2: format!("{}", fuel_crab),
+            timing_us: timed.as_micros(),
+        }
+    }
 }
 
 pub fn least_fuel(crabs: &[i32]) -> (i32, i32) {

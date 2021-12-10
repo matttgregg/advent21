@@ -1,18 +1,27 @@
-use crate::utils;
 use std::cmp::max;
 use std::time::SystemTime;
 use std::collections::HashMap;
+use crate::{DayResult, DaySolver};
 
-pub fn solve() {
-    utils::print_day(9);
-    let data = include_str!("data/day9.dat");
-    let start = SystemTime::now();
-    let (danger, lowest, map) = find_lowest(data);
-    let (s1, s2, s3) = biggest_three(&lowest, &map);
-    let timed = SystemTime::now().duration_since(start).unwrap();
-    println!("Danger in the area {} .", utils::fmt_bright(&danger));
-    println!("Found biggest sinks {} * {} * {} = {}", s1, s2, s3, utils::fmt_bright(&(s1 * s2 * s3)));
-    utils::print_duration(timed);
+pub struct Day {}
+
+impl DaySolver for Day {
+    fn solve(&self) -> DayResult {
+        let data = include_str!("data/day9.dat");
+        let start = SystemTime::now();
+        let (danger, lowest, map) = find_lowest(data);
+        let (s1, s2, s3) = biggest_three(&lowest, &map);
+        let timed = SystemTime::now().duration_since(start).unwrap();
+        let desc1 = format!("Danger in the area {} .", danger);
+        let desc2 = format!("Found biggest sinks {} * {} * {} = {}", s1, s2, s3, (s1 * s2 * s3));
+
+        DayResult{
+            description: format!("{}\n{}", desc1, desc2),
+            part1: format!("{}", danger),
+            part2: format!("{}", s1 * s2 * s3),
+            timing_us: timed.as_micros(),
+        }
+    }
 }
 
 fn biggest_three(sinks: &Vec<Point>, map: &Vec<Vec<u8>>) -> (u64, u64, u64) {

@@ -1,16 +1,25 @@
-use crate::utils;
+use crate::{DaySolver, DayResult};
 use std::time::SystemTime;
 
-pub fn solve() {
-   utils::print_day(1);
-   let data = include_str!("data/day1.dat");
-    let vals: Vec<i32> = data.lines().map(|c| c.parse::<i32>().unwrap()).collect();
-    let start = SystemTime::now();
-    let increases = increases(&vals);
-    let smoothed_increases = smoothed(&vals);
-    let timed = SystemTime::now().duration_since(start).unwrap();
-    println!("Increases {} . Smoothed increases {} .", utils::fmt_bright(&increases), utils::fmt_bright(&smoothed_increases));
-    utils::print_duration(timed);
+pub struct Day {}
+
+impl DaySolver for Day {
+    fn solve(&self) -> DayResult {
+        let data = include_str!("data/day1.dat");
+        let values: Vec<i32> = data.lines().map(|c| c.parse::<i32>().unwrap()).collect();
+        let start = SystemTime::now();
+        let increases = increases(&values);
+        let smoothed_increases = smoothed(&values);
+        let timed = SystemTime::now().duration_since(start).unwrap();
+        let description = format!("Increases {} . Smoothed increases {} .", increases, smoothed_increases);
+
+        DayResult {
+            description,
+            part1: format!("{}", increases),
+            part2: format!("{}", smoothed_increases),
+            timing_us: timed.as_micros(),
+        }
+    }
 }
 
 #[cfg(test)]
