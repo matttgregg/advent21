@@ -155,3 +155,36 @@ As usual my code for this is a bit ad-hoc, hard coding the four neighbours for
 each cell. It seems enough for today, but we might want something cleaner in 
 future if we hit more complex problems. (Memories of last year where 2D game of
 life quick evolved to n-dimensions, or extended neighbour patterns.)
+
+### Day 10
+
+This was probably the quickest that I've been in a while,
+probably due to having to think about parsing for
+the puzzles last year.
+
+Then, the thing that I learnt was shunting train algorithms,
+however you don't need anything that complicated for today.
+
+Key observation - stacks are your friend here. It's significantly
+simplified by the fact that you don't actually need to **do** anything
+with the input, just match the brackets.
+
+As always, think about what the options are at each step, and what
+information you need to know to make that choice:
+
+* I can either close the last opened bracket
+* Or open a new bracket.
+* I therefore need to know the last opened brakcet.
+* When I successfully close a bracket, I now have the *previous*
+unclosed bracket.
+
+So a stack of opened brackets ftw.
+
+The second half is almost disconnected (the first half 
+lets you prune out those which can be ignored).
+Observations to avoid being wasteful - you don't really
+need to work out the completion. (But may help with debugging
+if necessary.)
+
+Finally, factor it pleasantly to avoid looping over the input
+unnecessary extra times.
