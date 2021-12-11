@@ -188,3 +188,39 @@ if necessary.)
 
 Finally, factor it pleasantly to avoid looping over the input
 unnecessary extra times.
+
+### Day 11
+
+Flashing octopuses! This one is ripe for visualizations, I'll
+look to head back to this if I have time.
+
+The problem itself is a fairly fine grid update problem. The key
+with this sort of thing, where you have cascading updates, is to
+ensure that you update everything exactly as much as it needs to 
+be updated - no more, no less. Stacks are always useful to maintaining
+work lists. Maybe you want maps for avoiding double counting - or not
+if you can ensure you don't double count in other ways.
+
+In this specific problem, the issue comes down to:
+
+* Update all the octopuses. Note which ones flash.
+* Work through the flashes, updating neighbours.
+* Make sure you flash octopuses which are pushed over by neighbouring flashes!
+* Don't flash octopuses twice!
+
+Once done, the two parts are fairly similar. If you've organized
+the code neatly, part two is just keep running until you hit 100
+flashes.
+
+Things to make the code nicer? Try to avoid hard coding all the 
+neighbours - a double loop over (-1, 0, 1) should cover you here.
+Then there's a lot of twiddling if you want to squeeze performance
+and/or code beauty.
+
+Unrelated, I tried running my code on a windows box, and then 
+realized that (reasonably) the library `termion` which I'd been
+using for pretty console output wouldn't be windows compatible. This
+pushed me to rewrite the code as a library (doing the work) and a 
+small *nix specific executable for pretty output. This helpfully
+makes a wasm version much easier as well. (I can now incorporate my
+library into a wasm targeted project.)

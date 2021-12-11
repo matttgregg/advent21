@@ -38,7 +38,7 @@ fn brighten(desc: &String, p1: &String, p2: &String) -> String {
     let re1 = Regex::new(p1).unwrap();
     let re2 = Regex::new(p2).unwrap();
     let replaced = re1.replace_all(desc, utils::fmt_bright(p1)).to_string();
-    re2.replace_all(&replaced, utils::fmt_bright(p1)).to_string()
+    re2.replace_all(&replaced, utils::fmt_bright(p2)).to_string()
 }
 
 fn pretty_us(micros: u128) -> String {

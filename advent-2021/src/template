@@ -1,0 +1,30 @@
+use crate::{DaySolver, DayResult};
+use std::time::SystemTime;
+
+pub struct Day {}
+
+impl DaySolver for Day {
+    fn solve(&self) -> DayResult {
+        let data = include_str!("data/day1.dat");
+        let start = SystemTime::now();
+        let timed = SystemTime::now().duration_since(start).unwrap();
+        let description = format!("Increases {} . Smoothed increases {} .", increases, smoothed_increases);
+
+        DayResult {
+            description,
+            part1: format!("{}", ),
+            part2: format!("{}", ),
+            timing_us: timed.as_micros(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_data() {
+    }
+}
+
