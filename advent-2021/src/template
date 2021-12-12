@@ -8,12 +8,12 @@ impl DaySolver for Day {
         let data = include_str!("data/day1.dat");
         let start = SystemTime::now();
         let timed = SystemTime::now().duration_since(start).unwrap();
-        let description = format!("Increases {} . Smoothed increases {} .", increases, smoothed_increases);
+        let description = format!("");
 
         DayResult {
             description,
-            part1: format!("{}", ),
-            part2: format!("{}", ),
+            part1: format!("{}", 0),
+            part2: format!("{}", 0),
             timing_us: timed.as_micros(),
         }
     }

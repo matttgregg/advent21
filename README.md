@@ -224,3 +224,20 @@ pushed me to rewrite the code as a library (doing the work) and a
 small *nix specific executable for pretty output. This helpfully
 makes a wasm version much easier as well. (I can now incorporate my
 library into a wasm targeted project.)
+
+### Day 12
+
+A nice graph traversal problem today. The repeatable/non-repeatable
+caves makes a nice variation, but keep calm and all will fall out nicely.
+
+The second part - if you've structured things nicely this will be fine.
+My work consisted of changing a 'seen' map from bools to ints, and re-reading
+the question more carefully to understand that only *one* small cave can 
+be visited twice.
+
+Interestingly this was the first day that the borrow checker caused me problems,
+largely due to extensive use of strings as keys. As a result lifetimes and
+borrowing became issue, and I ended up with fairly poor performance due to
+quite a lot of string copying. I wonder if I can squeeze better performance
+by using integer indices throughout (and keeping a lookup function where
+necessary).

@@ -9,6 +9,7 @@ mod day8;
 mod day9;
 mod day10;
 mod day11;
+mod day12;
 
 pub struct DayResult {
     pub part1: String,
@@ -33,5 +34,6 @@ pub fn days() -> Vec<Box<dyn DaySolver>> {
     days.push(Box::new(day9::Day{}));
     days.push(Box::new(day10::Day{}));
     days.push(Box::new(day11::Day{}));
+    days.push(Box::new(day12::Day{}));
     days
 }
