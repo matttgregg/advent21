@@ -12,7 +12,7 @@ impl DaySolver for Day {
         let routes1 = caves.routes(1);
         let routes2 = caves.routes(2);
         let timed = SystemTime::now().duration_since(start).unwrap();
-        let description = format!("Cave system has {} routes, or if allowing double exploration {} routes", routes1, routes2);
+        let description = format!("Cave system has {} routes, or if allowing one double exploration {} routes", routes1, routes2);
 
         DayResult {
             description,
@@ -75,8 +75,9 @@ impl Caves {
         }
     }
 
-    fn inner_routes(&self, at: usize, seen: &mut Vec<u8>, limit: u8, route: &str) -> u64 {
+    fn inner_routes(&self, at: usize, seen: &mut Vec<u8>, limit: u8, route: &str) -> (u64, u64) {
         let mut routes = 0u64;
+        let mut visits = 1u64;
         for explore in &self.connections[at] {
             if *explore == self.start {
                // Never go back to the start.
@@ -85,27 +86,33 @@ impl Caves {
                 routes += 1;
             } else if self.large[*explore] {
                 // We can freely explore through 'large' caves.
-                routes += self.inner_routes(*explore, seen, limit, &format!("{},{}", route, explore));
+                let (add_routes, add_visits) = self.inner_routes(*explore, seen, limit, &format!("{},{}", route, explore));
+                routes += add_routes;
+                visits += add_visits;
             } else if seen[*explore] < limit {
                 // This is a small cave we haven't seen.
                 // Mark the cave and explore.
                 let seen_count = seen[*explore];
                 let new_limit = limit - seen_count;
                 seen[*explore] += 1;
-                routes += self.inner_routes(*explore, seen, new_limit, &format!("{},{}", route, explore));
+                let (add_routes, add_visits) = self.inner_routes(*explore, seen, new_limit, &format!("{},{}", route, explore));
+                routes += add_routes;
+                visits += add_visits;
                 seen[*explore] -= 1;
             }
         }
-        routes
+        (routes, visits)
     }
 
     fn routes(&self, limit: u8) -> u64 {
-        self.inner_routes(0, &mut vec![0; self.indices.len()], limit, "0")
+        let (routes, _) = self.inner_routes(0, &mut vec![0; self.indices.len()], limit, "0");
+        //println!("Visited : {} nodes.", visits);
+        routes
     }
 }
 
 fn is_upper(s: &str) -> bool {
-    s.chars().all(|c| c.is_uppercase())
+    s.chars().collect::<Vec<char>>()[0].is_uppercase()
 }
 
 #[cfg(test)]
