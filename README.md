@@ -244,3 +244,6 @@ necessary).
 
 _Update_:: As expected, switching to int indices as soon as possible cut timing
 to about a third.
+
+_Update_:: Also avoid cloning hash maps - surprisingly this provided very little
+performance improvement. (But it is nicer code.)

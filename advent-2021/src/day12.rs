@@ -70,7 +70,7 @@ impl Caves {
         }
     }
 
-    fn inner_routes(&self, at: usize, mut seen: HashMap<usize, u8>, limit: u8, route: &str) -> u64 {
+    fn inner_routes(&self, at: usize, seen: &mut HashMap<usize, u8>, limit: u8, route: &str) -> u64 {
         let mut routes = 0u64;
         for explore in &self.connections[&at] {
             if *explore == self.start {
@@ -80,22 +80,22 @@ impl Caves {
                 routes += 1;
             } else if *self.large.get(explore).unwrap() {
                 // We can freely explore through 'large' caves.
-                routes += self.inner_routes(*explore, seen.clone(), limit, &format!("{},{}", route, explore));
+                routes += self.inner_routes(*explore, seen, limit, &format!("{},{}", route, explore));
             } else if *seen.entry(explore.clone()).or_insert(0) < limit {
                 // This is a small cave we haven't seen.
                 // Mark the cave and explore.
-                let mut seen_copy = seen.clone();
-                let seen_count = seen_copy.entry(explore.clone()).or_insert(0);
-                let new_limit = limit - *seen_count;
-                *seen_count += 1;
-                routes += self.inner_routes(*explore, seen_copy, new_limit, &format!("{},{}", route, explore));
+                let seen_count = *seen.get(explore).unwrap_or(&0);
+                let new_limit = limit - seen_count;
+                seen.insert(*explore, seen_count + 1);
+                routes += self.inner_routes(*explore, seen, new_limit, &format!("{},{}", route, explore));
+                seen.insert(*explore, seen_count);
             }
         }
         routes
     }
 
     fn routes(&self, limit: u8) -> u64 {
-        self.inner_routes(0, HashMap::new(), limit, "0")
+        self.inner_routes(0, &mut HashMap::new(), limit, "0")
     }
 }
 
