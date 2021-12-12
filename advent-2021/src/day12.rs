@@ -25,20 +25,19 @@ impl DaySolver for Day {
 
 #[derive(Debug)]
 struct Caves {
-    connections: HashMap<usize, Vec<usize>>,
+    connections: Vec<Vec<usize>>,
     start: usize,
     end: usize,
-    large: HashMap<usize, bool>,
+    large: Vec<bool>,
     indices: HashMap<String, usize>,
 }
 
 impl Caves {
     fn from(data: &str) -> Self {
-        let mut connections: HashMap<usize, Vec<usize>> = HashMap::new();
+        let mut connections: Vec<Vec<usize>> = vec![];
         let start = 0;
         let end = 1;
         let mut indices: HashMap<String, usize> = HashMap::new();
-        let mut large: HashMap<usize, bool> = HashMap::new();
         indices.insert(String::from("start"),start);
         indices.insert(String::from("end"),end);
         for line in data.lines() {
@@ -49,16 +48,22 @@ impl Caves {
             // Set up the indices.
             let from_idx = *indices.get(&from).unwrap_or(&indices.len());
             indices.insert(from.clone(), from_idx);
-            large.insert(from_idx, is_upper(&from));
             let to_idx = *indices.get(&to).unwrap_or(&indices.len());
             indices.insert(to.clone(), to_idx);
-            large.insert(to_idx, is_upper(&to));
 
             // Connect in both directions.
-            let from_connections = connections.entry(from_idx).or_insert(vec![]);
-            from_connections.push(to_idx);
-            let to_connections = connections.entry(to_idx).or_insert(vec![]);
-            to_connections.push(from_idx);
+            let largest_idx = std::cmp::max(from_idx, to_idx);
+            if largest_idx >= connections.len() {
+                connections.resize_with(largest_idx + 1, || vec![])
+            }
+            connections[from_idx].push(to_idx);
+            connections[to_idx].push(from_idx);
+        }
+
+        let mut large = vec![false; indices.len()];
+
+        for (k, i) in &indices {
+            large[*i] = is_upper(k);
         }
 
         Self {
@@ -70,32 +75,32 @@ impl Caves {
         }
     }
 
-    fn inner_routes(&self, at: usize, seen: &mut HashMap<usize, u8>, limit: u8, route: &str) -> u64 {
+    fn inner_routes(&self, at: usize, seen: &mut Vec<u8>, limit: u8, route: &str) -> u64 {
         let mut routes = 0u64;
-        for explore in &self.connections[&at] {
+        for explore in &self.connections[at] {
             if *explore == self.start {
                // Never go back to the start.
             } else if *explore == self.end {
                 //println!("{},end", route);
                 routes += 1;
-            } else if *self.large.get(explore).unwrap() {
+            } else if self.large[*explore] {
                 // We can freely explore through 'large' caves.
                 routes += self.inner_routes(*explore, seen, limit, &format!("{},{}", route, explore));
-            } else if *seen.entry(explore.clone()).or_insert(0) < limit {
+            } else if seen[*explore] < limit {
                 // This is a small cave we haven't seen.
                 // Mark the cave and explore.
-                let seen_count = *seen.get(explore).unwrap_or(&0);
+                let seen_count = seen[*explore];
                 let new_limit = limit - seen_count;
-                seen.insert(*explore, seen_count + 1);
+                seen[*explore] += 1;
                 routes += self.inner_routes(*explore, seen, new_limit, &format!("{},{}", route, explore));
-                seen.insert(*explore, seen_count);
+                seen[*explore] -= 1;
             }
         }
         routes
     }
 
     fn routes(&self, limit: u8) -> u64 {
-        self.inner_routes(0, &mut HashMap::new(), limit, "0")
+        self.inner_routes(0, &mut vec![0; self.indices.len()], limit, "0")
     }
 }
 

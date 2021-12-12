@@ -247,3 +247,6 @@ to about a third.
 
 _Update_:: Also avoid cloning hash maps - surprisingly this provided very little
 performance improvement. (But it is nicer code.)
+
+_Update_:: Squeezed out a few more ms (getting under 100ms on my maching) by
+avoiding hash maps wherever possible now we're using integer indices.
