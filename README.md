@@ -241,3 +241,6 @@ borrowing became issue, and I ended up with fairly poor performance due to
 quite a lot of string copying. I wonder if I can squeeze better performance
 by using integer indices throughout (and keeping a lookup function where
 necessary).
+
+_Update_:: As expected, switching to int indices as soon as possible cut timing
+to about a third.
