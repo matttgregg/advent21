@@ -250,3 +250,26 @@ performance improvement. (But it is nicer code.)
 
 _Update_:: Squeezed out a few more ms (getting under 100ms on my maching) by
 avoiding hash maps wherever possible now we're using integer indices.
+
+### Day 13
+
+I loved today! Plot some dots on paper, fold the paper, read the paper.
+
+I don't think there's too much complication. The parsing is relatively simple.
+You need a little bit of geometrical intuition in order to work out the
+new coordinates after folding.
+
+There are definitely some choices on how to model the dots - some things to 
+make like easier are to note that you don't need to _merge_ dots really, you
+just need to note whether a location is marked or not. Folds compose nicely, 
+and also worth noting that the number of folds is pretty small - i.e. you're
+probably fine to try all folds on all points.
+
+But largely it's a question of not making this more complicated than it 
+needs to be. And having fun with visualizations if you like.
+
+It reminds me of a 2019 (?2018?) puzzle involving moving stars. That one
+was simulate the stars movement, read a message when they align.
+
+_Update_ : I looked it up. It's 2018, Day 10 with the stars spelling messages.
+
