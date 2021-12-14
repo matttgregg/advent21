@@ -273,3 +273,22 @@ was simulate the stars movement, read a message when they align.
 
 _Update_ : I looked it up. It's 2018, Day 10 with the stars spelling messages.
 
+
+### Day 14
+
+A very classic idea here - naive implementation completes fine for 10 iterations,
+but explodes to unworkable levels for 40 iterations.
+
+Then a smart algorithm completes in a few milliseconds.
+
+There are a few features that make this more interesting/fiddly:
+
+* You're looking at pairs.
+* You're looking for most/least common values.
+
+Eventually though, this boils down to memoization. As always a little
+extra can be squeezed out by getting away from chars/strings and to 
+integers as soon as possible. It's incredibly interesting how these
+hugely complex structures resolve quite quickly once the recursive 
+nature is leveraged.
+
