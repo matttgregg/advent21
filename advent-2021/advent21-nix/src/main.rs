@@ -27,8 +27,7 @@ fn main() {
 
 fn pretty_print_day(day_index: usize, solution: &DayResult) {
     utils::print_day(day_index + 1);
-    println!("Day {} : {}\n Solved in {}\n",
-             day_index,
+    println!("{}\n\t[{}]\n",
              brighten(&solution.description, &solution.part1, &solution.part2),
              pretty_us(solution.timing_us));
 
