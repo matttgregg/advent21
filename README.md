@@ -310,3 +310,7 @@ detailed implementation, particularly if you're pursuing performance.
 
 Plus, there's also a lesson in reading the question properly to
 make sure you get the right repetition behaviour.
+
+_Update_ : In a lesson for using the right data structure, using
+a min heap implementation works in about a fifth of the time of
+using a (continually) resorted list.

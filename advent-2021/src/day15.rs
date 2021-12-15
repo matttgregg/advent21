@@ -48,14 +48,12 @@ impl Eq for TryMove {}
 
 impl Ord for TryMove {
     fn cmp(&self, other: &Self) -> Ordering {
-        //other.best_attainable.cmp(&self.best_attainable)
         self.best_attainable.cmp(&other.best_attainable)
     }
 }
 
 impl PartialOrd for TryMove {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        //Some(other.cmp(self))
         Some(self.cmp(other))
     }
 }
