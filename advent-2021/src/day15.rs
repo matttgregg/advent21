@@ -67,6 +67,7 @@ impl CaveMap {
             cost: 0,
         }];
 
+        costs_to[0][0] = 0;
         while worklist.len() > 0 {
             self.paths_update(&mut worklist, &mut costs_to);
         }
@@ -81,9 +82,19 @@ impl CaveMap {
         costs_to[self.full_grid_size - 1][self.full_grid_size - 1]
     }
 
+    // Check whether we can improve.
     fn could_improve(&self, try_move: &TryMove, costs: &Vec<Vec<u64>>) -> bool {
+        if costs[try_move.i][try_move.j] <= try_move.cost {
+            false
+        } else {
+            let current_best = costs[self.full_grid_size - 1][self.full_grid_size - 1];
+            self.best_case(try_move) < current_best
+        }
+    }
+
+    fn could_beat(&self, try_move: &TryMove, costs: &Vec<Vec<u64>>) -> bool {
         let current_best = costs[self.full_grid_size - 1][self.full_grid_size - 1];
-        return self.best_case(try_move) < current_best;
+        self.best_case(try_move) < current_best
     }
 
     fn best_case(&self, try_move: &TryMove) -> u64 {
@@ -99,20 +110,11 @@ impl CaveMap {
     }
 
     fn paths_update(&self, worklist: &mut Vec<TryMove>, costs: &mut Vec<Vec<u64>>) {
-        let TryMove { i, j, cost} = worklist.pop().unwrap();
-
-        // Note that we don't 'enter' the origin, so no cost is added.
-        let new_cost = if  i == 0 && j == 0 { cost } else { cost
-            + self.risk_at(i, j) };
-        let old_cost = costs[i][j];
-
-        if new_cost >= old_cost {
-            // This is no better than we've already seen. Don't bother progressing.
-            return;
+        let try_move = worklist.pop().unwrap();
+        let TryMove { i, j, cost} = try_move;
+        if !self.could_beat(&try_move, costs) {
+            return
         }
-
-        // Otherwise, it is better! Update, and propagate to neighbours.else
-        costs[i][j] = new_cost;
 
         for di in -1..=1 {
             for dj in -1..=1 {
@@ -135,13 +137,17 @@ impl CaveMap {
                     continue;
                 }
 
+                let new_cost = cost + self.risk_at(new_i, new_j);
+
                 let new_move = TryMove {
-                    i: (i as i64 + di) as usize,
-                    j: (j as i64 + dj) as usize,
+                    i: new_i,
+                    j: new_j,
                     cost: new_cost,
                 };
 
+                // Check whether this does lead to an improvement.
                 if self.could_improve(&new_move, &costs) {
+                    costs[new_i][new_j] = new_cost;
                     worklist.push(new_move)
                 }
             }
@@ -163,6 +169,15 @@ mod tests {
 
     #[test]
     fn test_data() {
+        let data = include_str!("data/test_day15.dat");
+
+        let cave_map1 = CaveMap::from(data, 1);
+        let path_risk1 = cave_map1.find_path();
+        assert_eq!(path_risk1, 40);
+
+        let cave_map5 = CaveMap::from(data, 5);
+        let path_risk5 = cave_map5.find_path();
+        assert_eq!(path_risk5, 315);
     }
 }
 

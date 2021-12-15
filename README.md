@@ -292,3 +292,21 @@ integers as soon as possible. It's incredibly interesting how these
 hugely complex structures resolve quite quickly once the recursive 
 nature is leveraged.
 
+### Day 15
+
+It wouldn't be advent of code without some path finding going on!
+This one is a fairly straightforward implementation - when that's the
+case I find it quite useful to do the implementation without 
+looking things up - partly relying on memory, partly relying on 
+re-deriving the ideas.
+
+I see some people complaining on reddit about this being a copy
+paste type problem - but that's really the case with any AoC problem.
+If you really care and just want the optimal solution you can 
+do a google search and pull down a solution in your language of choice.
+
+As always with this sort of thing, the interesting bit is the 
+detailed implementation, particularly if you're pursuing performance.
+
+Plus, there's also a lesson in reading the question properly to
+make sure you get the right repetition behaviour.
