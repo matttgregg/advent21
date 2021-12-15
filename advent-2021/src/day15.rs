@@ -9,16 +9,19 @@ impl DaySolver for Day {
         let data = include_str!("data/day15.dat");
         let start = SystemTime::now();
 
-        let cave_map = CaveMap::from(data);
-        let path_risk = cave_map.find_path();
+        let cave_map1 = CaveMap::from(data, 1);
+        let path_risk1 = cave_map1.find_path();
+
+        let cave_map5 = CaveMap::from(data, 5);
+        let path_risk5 = cave_map5.find_path();
 
         let timed = SystemTime::now().duration_since(start).unwrap();
-        let description = format!("Least risk path has risk {}", path_risk);
+        let description = format!("Least risk path has risk {}, or on the bigger map {}", path_risk1, path_risk5);
 
         DayResult {
             description,
-            part1: format!("{}", path_risk),
-            part2: format!("{}", 0),
+            part1: format!("{}", path_risk1),
+            part2: format!("{}", path_risk5),
             timing_us: timed.as_micros(),
         }
     }
@@ -26,8 +29,9 @@ impl DaySolver for Day {
 
 #[derive(Debug)]
 struct CaveMap {
-    risks: Vec<Vec<u8>>,
-    square_size: usize,
+    risks_minus: Vec<Vec<u8>>,
+    grid_size: usize,
+    full_grid_size: usize,
 }
 
 struct TryMove {
@@ -37,25 +41,26 @@ struct TryMove {
 }
 
 impl CaveMap {
-    fn from(data: &str) -> Self {
-        let mut risks = vec![];
+    fn from(data: &str, multiplier: usize) -> Self {
+        let mut risks_minus = vec![];
         for line in data.lines() {
             let risk_line = line.chars()
-                .map(|c| String::from(c).parse::<u8>().unwrap())
+                .map(|c| String::from(c).parse::<u8>().unwrap() - 1)
                 .collect::<Vec<u8>>();
-            risks.push(risk_line);
+            risks_minus.push(risk_line);
         }
-        let square_size = risks.len();
+        let grid_size = risks_minus.len();
+        let full_grid_size = multiplier * grid_size;
 
         Self {
-            risks,
-            square_size,
+            risks_minus,
+            grid_size,
+            full_grid_size,
         }
     }
 
     fn find_path(&self) -> u64 {
-        // We basically follow Djikstra
-        let mut costs_to = vec![vec![u64::max_value(); self.square_size]; self.square_size];
+        let mut costs_to = vec![vec![u64::max_value(); self.full_grid_size]; self.full_grid_size];
         let mut worklist: Vec<TryMove> = vec![TryMove{
             i: 0,
             j: 0,
@@ -65,24 +70,40 @@ impl CaveMap {
         while worklist.len() > 0 {
             self.paths_update(&mut worklist, &mut costs_to);
         }
-        costs_to[self.square_size - 1][self.square_size - 1]
+
+        /*
+        // Print out the final grid
+        for l in &costs_to {
+            let strs = l.iter().map(|r| if *r > 1000 { String::from("|****|") } else { format!("|{:04}|", r)}).collect::<Vec<String>>();
+            println!("{}", strs.join("."));
+        }
+         */
+        costs_to[self.full_grid_size - 1][self.full_grid_size - 1]
     }
 
     fn could_improve(&self, try_move: &TryMove, costs: &Vec<Vec<u64>>) -> bool {
-        let current_best = costs[self.square_size - 1][self.square_size - 1];
+        let current_best = costs[self.full_grid_size - 1][self.full_grid_size - 1];
         return self.best_case(try_move) < current_best;
     }
 
     fn best_case(&self, try_move: &TryMove) -> u64 {
-        try_move.cost + (self.square_size - try_move.i) as u64
-            + (self.square_size - try_move.j) as u64
+        try_move.cost + (self.full_grid_size - try_move.i) as u64
+            + (self.full_grid_size - try_move.j) as u64
+    }
+
+    fn risk_at(&self, i: usize, j: usize) -> u64 {
+        // The grid repeats, but for each repeat increments, wrapping to 1-8.
+        let incr = (i / self.grid_size) + (j / self.grid_size);
+        let base_val = self.risks_minus[i % self.grid_size][j % self.grid_size];
+        ((base_val as usize + incr) % 9) as u64 + 1
     }
 
     fn paths_update(&self, worklist: &mut Vec<TryMove>, costs: &mut Vec<Vec<u64>>) {
         let TryMove { i, j, cost} = worklist.pop().unwrap();
 
         // Note that we don't 'enter' the origin, so no cost is added.
-        let new_cost = if  i == 0 && j == 0 { cost } else { cost + self.risks[i][j] as u64};
+        let new_cost = if  i == 0 && j == 0 { cost } else { cost
+            + self.risk_at(i, j) };
         let old_cost = costs[i][j];
 
         if new_cost >= old_cost {
@@ -109,8 +130,8 @@ impl CaveMap {
                 let new_j = (j as i64 + dj) as usize;
 
                 // We ignore falling off the high end.
-                if (new_i >= self.square_size) ||
-                    (new_j >= self.square_size) {
+                if (new_i >= self.full_grid_size) ||
+                    (new_j >= self.full_grid_size) {
                     continue;
                 }
 
