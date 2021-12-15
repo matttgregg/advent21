@@ -1,6 +1,8 @@
 use std::cmp::Ordering;
 use crate::{DaySolver, DayResult};
 use std::time::SystemTime;
+use std::collections::BinaryHeap;
+use std::cmp::Reverse;
 
 pub struct Day {}
 
@@ -30,6 +32,7 @@ impl DaySolver for Day {
 #[derive(Debug)]
 struct CaveMap {
     risks_minus: Vec<Vec<u8>>,
+    risks_full: Vec<Vec<u8>>,
     grid_size: usize,
     full_grid_size: usize,
 }
@@ -38,6 +41,29 @@ struct TryMove {
     i: usize,
     j: usize,
     cost: u64,
+    best_attainable: u64,
+}
+
+impl Eq for TryMove {}
+
+impl Ord for TryMove {
+    fn cmp(&self, other: &Self) -> Ordering {
+        //other.best_attainable.cmp(&self.best_attainable)
+        self.best_attainable.cmp(&other.best_attainable)
+    }
+}
+
+impl PartialOrd for TryMove {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        //Some(other.cmp(self))
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for TryMove {
+    fn eq(&self, other: &Self) -> bool {
+        self.best_attainable == other.best_attainable
+    }
 }
 
 impl CaveMap {
@@ -52,8 +78,19 @@ impl CaveMap {
         let grid_size = risks_minus.len();
         let full_grid_size = multiplier * grid_size;
 
+        // Expand to write the full grid, to avoid recalculating.
+        let mut risks_full = vec![vec![0; full_grid_size]; full_grid_size];
+        for i in 0..full_grid_size {
+            for j in 0..full_grid_size {
+                let incr = (i / grid_size) + (j / grid_size);
+                let base_val = risks_minus[i % grid_size][j % grid_size];
+                risks_full[i][j] = ((base_val as usize + incr) % 9) as u8 + 1;
+            }
+        }
+
         Self {
             risks_minus,
+            risks_full,
             grid_size,
             full_grid_size,
         }
@@ -61,24 +98,28 @@ impl CaveMap {
 
     fn find_path(&self) -> u64 {
         let mut costs_to = vec![vec![u64::max_value(); self.full_grid_size]; self.full_grid_size];
-        let mut worklist: Vec<TryMove> = vec![TryMove{
+        let mut worklist: BinaryHeap<Reverse<TryMove>> = BinaryHeap::new();
+
+        worklist.push(Reverse(TryMove{
             i: 0,
             j: 0,
             cost: 0,
-        }];
+            best_attainable: 2 * self.full_grid_size as u64,
+        }));
 
         costs_to[0][0] = 0;
         while worklist.len() > 0 {
             self.paths_update(&mut worklist, &mut costs_to);
         }
 
-        /*
         // Print out the final grid
+        /*
         for l in &costs_to {
-            let strs = l.iter().map(|r| if *r > 1000 { String::from("|****|") } else { format!("|{:04}|", r)}).collect::<Vec<String>>();
+            let strs = l.iter().map(|r| if *r > 10000 { String::from("|****|") } else { format!("|{:04}|", r)}).collect::<Vec<String>>();
             println!("{}", strs.join("."));
         }
-         */
+        println!("{}x{}", self.full_grid_size, self.full_grid_size);
+        */
         costs_to[self.full_grid_size - 1][self.full_grid_size - 1]
     }
 
@@ -103,16 +144,20 @@ impl CaveMap {
     }
 
     fn risk_at(&self, i: usize, j: usize) -> u64 {
+        self.risks_full[i][j] as u64
+            /*
         // The grid repeats, but for each repeat increments, wrapping to 1-8.
         let incr = (i / self.grid_size) + (j / self.grid_size);
         let base_val = self.risks_minus[i % self.grid_size][j % self.grid_size];
         ((base_val as usize + incr) % 9) as u64 + 1
+
+             */
     }
 
-    fn paths_update(&self, worklist: &mut Vec<TryMove>, costs: &mut Vec<Vec<u64>>) {
+    fn paths_update(&self, worklist: &mut BinaryHeap<Reverse<TryMove>>, costs: &mut Vec<Vec<u64>>) {
         let try_move = worklist.pop().unwrap();
-        let TryMove { i, j, cost} = try_move;
-        if !self.could_beat(&try_move, costs) {
+        let TryMove { i, j, cost, .. } = try_move.0;
+        if !self.could_beat(&try_move.0, costs) {
             return
         }
 
@@ -138,28 +183,24 @@ impl CaveMap {
                 }
 
                 let new_cost = cost + self.risk_at(new_i, new_j);
+                let best_attainable =
+                    new_cost + (self.full_grid_size - new_i) as u64
+                        + (self.full_grid_size - new_j) as u64;
 
                 let new_move = TryMove {
                     i: new_i,
                     j: new_j,
                     cost: new_cost,
+                    best_attainable,
                 };
 
                 // Check whether this does lead to an improvement.
                 if self.could_improve(&new_move, &costs) {
                     costs[new_i][new_j] = new_cost;
-                    worklist.push(new_move)
+                    worklist.push(Reverse(new_move))
                 }
             }
         }
-
-        worklist.sort_unstable_by(|tma, tmb| self.order_moves(tma, tmb));
-    }
-
-    fn order_moves(&self, mva: &TryMove, mvb: &TryMove) -> Ordering {
-        let costa = self.best_case(mva);
-        let costb = self.best_case(mvb);
-        costb.cmp(&costa)
     }
 }
 
