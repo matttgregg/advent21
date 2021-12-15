@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use crate::{DaySolver, DayResult};
 use std::time::SystemTime;
 
@@ -29,6 +30,12 @@ struct CaveMap {
     square_size: usize,
 }
 
+struct TryMove {
+    i: usize,
+    j: usize,
+    cost: u64,
+}
+
 impl CaveMap {
     fn from(data: &str) -> Self {
         let mut risks = vec![];
@@ -49,11 +56,31 @@ impl CaveMap {
     fn find_path(&self) -> u64 {
         // We basically follow Djikstra
         let mut costs_to = vec![vec![u64::max_value(); self.square_size]; self.square_size];
-        self.paths_update(0, 0, 0, &mut costs_to);
+        let mut worklist: Vec<TryMove> = vec![TryMove{
+            i: 0,
+            j: 0,
+            cost: 0,
+        }];
+
+        while worklist.len() > 0 {
+            self.paths_update(&mut worklist, &mut costs_to);
+        }
         costs_to[self.square_size - 1][self.square_size - 1]
     }
 
-    fn paths_update(&self, i: usize, j: usize, cost: u64, costs: &mut Vec<Vec<u64>>) {
+    fn could_improve(&self, try_move: &TryMove, costs: &Vec<Vec<u64>>) -> bool {
+        let current_best = costs[self.square_size - 1][self.square_size - 1];
+        return self.best_case(try_move) < current_best;
+    }
+
+    fn best_case(&self, try_move: &TryMove) -> u64 {
+        try_move.cost + (self.square_size - try_move.i) as u64
+            + (self.square_size - try_move.j) as u64
+    }
+
+    fn paths_update(&self, worklist: &mut Vec<TryMove>, costs: &mut Vec<Vec<u64>>) {
+        let TryMove { i, j, cost} = worklist.pop().unwrap();
+
         // Note that we don't 'enter' the origin, so no cost is added.
         let new_cost = if  i == 0 && j == 0 { cost } else { cost + self.risks[i][j] as u64};
         let old_cost = costs[i][j];
@@ -81,15 +108,31 @@ impl CaveMap {
                 let new_i = (i as i64 + di) as usize;
                 let new_j = (j as i64 + dj) as usize;
 
-                // We ignor falling off the high end.
+                // We ignore falling off the high end.
                 if (new_i >= self.square_size) ||
                     (new_j >= self.square_size) {
                     continue;
                 }
 
-                self.paths_update(new_i, new_j, new_cost, costs);
+                let new_move = TryMove {
+                    i: (i as i64 + di) as usize,
+                    j: (j as i64 + dj) as usize,
+                    cost: new_cost,
+                };
+
+                if self.could_improve(&new_move, &costs) {
+                    worklist.push(new_move)
+                }
             }
         }
+
+        worklist.sort_unstable_by(|tma, tmb| self.order_moves(tma, tmb));
+    }
+
+    fn order_moves(&self, mva: &TryMove, mvb: &TryMove) -> Ordering {
+        let costa = self.best_case(mva);
+        let costb = self.best_case(mvb);
+        costb.cmp(&costa)
     }
 }
 
