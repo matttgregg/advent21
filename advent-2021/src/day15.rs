@@ -3,6 +3,8 @@ use crate::{DaySolver, DayResult};
 use std::time::SystemTime;
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
+use std::io::Write;
+use rand::Rng;
 
 pub struct Day {}
 
@@ -14,8 +16,14 @@ impl DaySolver for Day {
         let cave_map1 = CaveMap::from(data, 1);
         let path_risk1 = cave_map1.find_path();
 
-        let cave_map5 = CaveMap::from(data, 5);
+        let cave_map5 = CaveMap::from(data, 15);
         let path_risk5 = cave_map5.find_path();
+
+        /*
+        let cave_map_rand = CaveMap::random(2000, 1);
+        let path_risk_rand = cave_map_rand.find_path();
+        println!("Solved random map with cost: {}", path_risk_rand);
+         */
 
         let timed = SystemTime::now().duration_since(start).unwrap();
         let description = format!("Least risk path has risk {}, or on the bigger map {}", path_risk1, path_risk5);
@@ -65,6 +73,35 @@ impl PartialEq for TryMove {
 }
 
 impl CaveMap {
+    fn random(size: usize, multiplier: usize) -> Self {
+
+        let mut rng = rand::thread_rng();
+        let mut risks_minus = vec![vec![0;size];size];
+        for i in 0..size {
+            for j in 0..size {
+                risks_minus[i][j] = rng.gen_range(0..9);
+            }
+        }
+        let grid_size = risks_minus.len();
+        let full_grid_size = multiplier * grid_size;
+
+        // Expand to write the full grid, to avoid recalculating.
+        let mut risks_full = vec![vec![0; full_grid_size]; full_grid_size];
+        for i in 0..full_grid_size {
+            for j in 0..full_grid_size {
+                let incr = (i / grid_size) + (j / grid_size);
+                let base_val = risks_minus[i % grid_size][j % grid_size];
+                risks_full[i][j] = ((base_val as usize + incr) % 9) as u8 + 1;
+            }
+        }
+
+        Self {
+            risks_minus,
+            risks_full,
+            grid_size,
+            full_grid_size,
+        }
+    }
     fn from(data: &str, multiplier: usize) -> Self {
         let mut risks_minus = vec![];
         for line in data.lines() {
@@ -118,6 +155,37 @@ impl CaveMap {
         }
         println!("{}x{}", self.full_grid_size, self.full_grid_size);
         */
+        let max = costs_to[self.full_grid_size - 1][self.full_grid_size - 1];
+        let k = (max as f32) / (2.0 * self.full_grid_size as f32);
+
+        // Build an adjusted map.
+        let mut adjusted_costs_to = vec![vec![0i64; self.full_grid_size]; self.full_grid_size];
+
+        let mut adj_max = 0;
+        let mut adj_min = 0;
+        for i in 0..self.full_grid_size {
+            for j in 0..self.full_grid_size {
+                let x = i as f32;
+                let y= j as f32;
+                let adj = ((x + y) * k) as i64;
+                adjusted_costs_to[i][j] = (costs_to[i][j] as i64) - adj;
+                adj_max = std::cmp::max(adj_max, adjusted_costs_to[i][j]);
+                adj_min = std::cmp::min(adj_min, adjusted_costs_to[i][j]);
+            }
+        }
+
+
+        println!("Found adjusted ranges: {} -> {}", adj_min, adj_max);
+
+        let mut file = std::fs::File::create("day15.pbm").unwrap();
+        let pbm_header = format!("P2\n# Cave mapping\n{} {}\n{}", self.full_grid_size,
+            self.full_grid_size, 63);
+        let pbm_body = adjusted_costs_to.iter().map(
+            |l| l.iter()
+                .map(|v| format!("{}", v.abs() % 63)).collect::<Vec<String>>().join(" ")
+        ).collect::<Vec<String>>().join("\n");
+        file.write_all(format!("{}\n{}", pbm_header, pbm_body).as_bytes()).unwrap();
+
         costs_to[self.full_grid_size - 1][self.full_grid_size - 1]
     }
 
