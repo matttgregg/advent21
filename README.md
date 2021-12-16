@@ -314,3 +314,32 @@ make sure you get the right repetition behaviour.
 _Update_ : In a lesson for using the right data structure, using
 a min heap implementation works in about a fifth of the time of
 using a (continually) resorted list.
+
+_Update_ : This seemed to lend itself to visualizations, however just
+plotting the best path cost to each point leads to a rather 
+simple image. However, I noticed that it's *mostly* equal to 
+a simple distance function from the top left corner. If you 
+strip away that function (scaling so that it matches at the start 
+and end points), you get a lot more interesting detail. It's
+also strangely organic, reminiscent of clouds.
+
+### Day 16
+
+I like the way that AoC shifts between deceptively simple but 
+computationally hard problems to failry complicated problems
+which are fairly cheap in terms of computation. This definitely 
+falls into the latter category. There are a lot of details
+to encode, but as long as you keep them straight you don't need
+to worry about performance problems.
+
+As I've been working through the excellent [Crafting Interpreters](https://craftinginterpreters.com/)
+I decided to take a fairly standard, hand written approach.
+
+My program looks very much like a tokenizer (where all my tokens
+are `1` or `0`), and I build up a tree structure.
+The second part, evaluating the message, was happily trivial
+given I'd passed the data properly for my first part.
+
+I did take a slight shortcut on summing the version values - I
+kept a total as I was reading them, but it would be easy enough
+to evaluate from a tree walk as well.

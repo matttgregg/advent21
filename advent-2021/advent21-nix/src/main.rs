@@ -15,11 +15,11 @@ fn main() {
         },
         Some(i) => {
             let days = advent_2021::days();
-            if i as usize >= days.len() {
-                eprintln!("Unimplemented day {}", i);
+            if i as usize > days.len() {
+                eprintln!("Unimplemented day {}/{}", i, days.len());
                 process::exit(1);
             } else {
-                pretty_print_day(i as usize, &days[i as usize].solve());
+                pretty_print_day((i - 1) as usize, &days[i as usize - 1].solve());
             }
         }
     }
