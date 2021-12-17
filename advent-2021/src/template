@@ -5,8 +5,11 @@ pub struct Day {}
 
 impl DaySolver for Day {
     fn solve(&self) -> DayResult {
-        let data = include_str!("data/day.dat");
+        let data = include_str!("data/test_day.dat");
         let start = SystemTime::now();
+
+
+
         let timed = SystemTime::now().duration_since(start).unwrap();
         let description = format!("");
 
@@ -27,4 +30,3 @@ mod tests {
     fn test_data() {
     }
 }
-

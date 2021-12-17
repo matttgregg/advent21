@@ -343,3 +343,31 @@ given I'd passed the data properly for my first part.
 I did take a slight shortcut on summing the version values - I
 kept a total as I was reading them, but it would be easy enough
 to evaluate from a tree walk as well.
+
+### Day 17
+
+Ho, ho, ho! This one was a fun day. It was particularly nice in 
+that there are (at least) two approaches:
+
+* Simulate the trajectories! Then try possibilities to find which cross.
+* Don't simulate that trajectories but use the math.
+
+I went for the second, but the first is perfectly workable. In
+a real life setting (and a maybe more complex system) I can easily
+see using the first to get a handle on the problem, and then trying
+the second when worrying about performance.
+
+The maths isn't too hard - A-Level (pre-degree) should give you 
+everything you need to derive from first principles. It's 
+actually a lot of fun but you do need to take care. I wasted
+too much time on:
+
+* An inverted sign.
+* Forgetting that the x-velocity couldn't go in reverse.
+
+Admittedly, it's the sort of thing that if I'd been simulating
+full trajectories the x-reverse problem would have been 
+obvious sooner!
+
+Very nice variation again, from the previous days or high 
+efficiency (15th) and extra computer science-y (16th).

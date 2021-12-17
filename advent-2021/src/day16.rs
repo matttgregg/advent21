@@ -15,7 +15,7 @@ impl DaySolver for Day {
 
         let timed = SystemTime::now().duration_since(start).unwrap();
         let description = format!(
-            "Sum of all verions numbers = {}, evaluated to {}",
+            "Sum of all versions numbers = {}, evaluated to {}",
             version_total, evaluated
         );
 
@@ -184,7 +184,7 @@ impl Program {
             PacketContents::Literal(self.read_literal())
         } else {
             // Nested
-            self.read_subpackets()
+            self.read_sub_packets()
         };
 
         Packet {
@@ -194,7 +194,7 @@ impl Program {
         }
     }
 
-    fn read_subpackets(&mut self) -> PacketContents {
+    fn read_sub_packets(&mut self) -> PacketContents {
         // Check the length type
         let length_type = self.read_one_u8();
 
