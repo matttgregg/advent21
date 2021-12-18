@@ -5,37 +5,53 @@ pub struct Day {}
 
 impl DaySolver for Day {
     fn solve(&self) -> DayResult {
-        let data = include_str!("data/test_day18.dat");
+        let data = include_str!("data/day18.dat");
         let start = SystemTime::now();
 
-        test_one();
-
-        let timed = SystemTime::now().duration_since(start).unwrap();
-        /*
-        let solved = solve_sums(data);
-        let magnitude = magnitude(&solved);
+        let (solved, magnitude) = solve_sums(data);
+        let max_pair = max_pair(data);
         let description = format!(
-            "Solved the homework to :: {}, with magnitude {}",
-            solved, magnitude
-        );*/
+            "Solved the homework to :: {}, with magnitude {} . Max pair across all sums is {} .",
+            solved, magnitude, max_pair
+        );
+        let timed = SystemTime::now().duration_since(start).unwrap();
 
         DayResult {
-            description: String::from(""),
-            part1: format!("{}", 0),
-            part2: format!("{}", 0),
+            description,
+            part1: format!("{}", magnitude),
+            part2: format!("{}", max_pair),
             timing_us: timed.as_micros(),
         }
     }
 }
 
-fn magnitude(data: &str) -> u64 {
-    0
+fn max_pair(data: &str) -> i64 {
+    let mut max_pair = 0;
+    let lines = data.lines().collect::<Vec<&str>>();
+    let lines_length = lines.len();
+
+    for i in 0..lines_length {
+        for j in 0..lines_length {
+            // We can't add to self.
+            if i != j {
+                let sum_problem = format!("[{},{}]", lines[i], lines[j]);
+                let mut math = SnailMath::new(&sum_problem);
+                let _res = math.solve();
+                let sum = math.magnitude();
+
+                if sum > max_pair {
+                    max_pair = sum;
+                }
+            }
+        }
+    }
+
+    max_pair
 }
 
-fn solve_sums(data: &str) -> String {
+fn solve_sums(data: &str) -> (String, i64) {
     let mut current = String::from("");
     for l in data.lines() {
-        println!("\t{}\n+\t{}", current, l);
         current = if current.len() == 0 {
             // First step, just load and solve.
             String::from(l)
@@ -44,48 +60,10 @@ fn solve_sums(data: &str) -> String {
             let sum = format!("[{},{}]", current, l);
             SnailMath::new(&sum).solve()
         };
-        println!("=\t{}", current);
-    }
-    println!("");
-    current
-}
-
-fn test_one() {
-    let mut math = SnailMath::new(
-        "[[[[[4,3],4],4],[7,[[8,4],9]]], [1,1]]", //"[[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]],[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]]",
-    );
-    println!("= {}", math.solve());
-}
-
-fn test() {
-    for test in [
-        "[7,[6,[5,[4,[3,2]]]]]",
-        "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]",
-        "[[[[0,7],4],[15,[0,13]]],[1,1]]",
-        "[[[[0,7],4],[[7,8],[0,13]]],[1,1]]",
-        "[[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]],[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]]",
-    ]
-    .iter()
-    {
-        let mut math = SnailMath::new(test);
-        math.explode_or_split();
-        println!("{} -> {}", test, math.left_string());
     }
 
-    for test in ["[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"].iter() {
-        let mut math = SnailMath::new(test);
-        println!("{} -> {}", test, math.solve());
-    }
-
-    for test in [
-        "[1,1]\n[2,2]\n[3,3]\n[4,4]",
-        "[1,1]\n[2,2]\n[3,3]\n[4,4]\n[5,5]",
-        "[1,1]\n[2,2]\n[3,3]\n[4,4]\n[5,5]\n[6,6]",
-    ]
-    .iter()
-    {
-        println!("{} ==>\n\t {}", test, solve_sums(test));
-    }
+    let magnitude = SnailMath::new(&current).magnitude();
+    (current, magnitude)
 }
 
 struct SnailMath {
@@ -125,9 +103,18 @@ impl SnailMath {
 
     fn solve(&mut self) -> String {
         // Do explosions and splits.
-        println!("{}", self.right_string());
-        while self.explode_or_split() {
-            println!("=> {}", self.left_string());
+        loop {
+            while self.try_explode() {
+                self.reset();
+            }
+            self.reset();
+
+            if !self.try_split() {
+                // We didn't do anything! So we're done.
+                break;
+            }
+
+            // We performed a split - go back and try exploding again.
             self.reset();
         }
 
@@ -137,6 +124,22 @@ impl SnailMath {
     fn reset(&mut self) {
         while self.move_left().is_some() {}
         self.depth = 0;
+    }
+
+    fn try_split(&mut self) -> bool {
+        // Step until depth reaches 4 or end.
+        while self.peek().is_some() {
+            // We only note the *first* digit in a number.
+            if self.peek_is_number() && !self.peek_back_is_number() {
+                // If it's a number > 9, we split and finish immediately.
+                if self.peek_number() > 9 {
+                    self.split();
+                    return true;
+                }
+            }
+            self.move_right();
+        }
+        false
     }
 
     fn split(&mut self) {
@@ -153,19 +156,13 @@ impl SnailMath {
         while self.move_right().is_some() {}
     }
 
-    fn explode_or_split(&mut self) -> bool {
+    fn try_explode(&mut self) -> bool {
         let mut since_last_digit = 0;
         // Step until depth reaches 4 or end.
         while self.peek().is_some() && self.depth < 5 {
             // We only note the *first* digit in a number.
             if self.peek_is_number() && !self.peek_back_is_number() {
                 since_last_digit = 0;
-
-                // If it's a number > 9, we split and finish immediately.
-                if self.peek_number() > 9 {
-                    self.split();
-                    return true;
-                }
             }
             self.move_right();
             since_last_digit += 1;
@@ -181,16 +178,6 @@ impl SnailMath {
         let (l, r) = self.consume_number_pair();
         // Consume the closing ']'
         assert_eq!(self.consume_right(), Some(']'));
-        /*
-        println!(
-            "Will explode {}, {} :: {}/{} -<<- {}",
-            l,
-            r,
-            self.left.len(),
-            self.right.len(),
-            since_last_digit
-        );
-         */
 
         // Handle the last left number.
         if since_last_digit < self.left.len() {
@@ -198,13 +185,6 @@ impl SnailMath {
             for _ in 0..since_last_digit {
                 self.move_left();
             }
-
-            /*
-            println!(
-                "Shiften back to: {}||{}",
-                self.left_string(),
-                self.right_string()
-            );*/
 
             let last_left = self.consume_number();
             let number_len = last_left.to_string().chars().collect::<Vec<char>>().len();
@@ -269,6 +249,53 @@ impl SnailMath {
 
     fn consume_number_pair(&mut self) -> (i64, i64) {
         self.inner_number_pair(true)
+    }
+
+    fn magnitude(&mut self) -> i64 {
+        // We recursively collapse until we have a single number left.
+        self.reset();
+        while !self.peek_is_number() {
+            while self.peek().is_some() {
+                // Try consuming a number pair
+                self.try_complete_number_pair();
+            }
+
+            self.reset();
+        }
+        // Should be left with just a number.
+        self.right_string().parse::<i64>().unwrap()
+    }
+
+    fn try_complete_number_pair(&mut self) {
+        if let Some('[') = self.peek() {
+            self.consume_right();
+            if self.peek_is_number() {
+                let left = self.consume_number();
+                if self.peek() == Some(&',') {
+                    self.consume_right();
+                    if self.peek_is_number() {
+                        //  We have a complete number, but need to tidy up the terminating ']'
+                        let right = self.consume_number();
+                        assert_eq!(self.consume_right(), Some(']'));
+                        self.push_number(3 * left + 2 * right);
+                    } else {
+                        // We've read 'l,' , so now need to put that back.
+                        for c in format!("[{},", left).chars() {
+                            self.left.push(c);
+                        }
+                    }
+                } else {
+                    // We've consumed a number, so now need to put it back
+                    for c in format!("[{}", left).chars() {
+                        self.left.push(c);
+                    }
+                }
+            } else {
+                self.left.push('[');
+            }
+        } else {
+            self.move_right();
+        }
     }
 
     fn inner_number_pair(&mut self, remove: bool) -> (i64, i64) {
@@ -349,5 +376,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_data() {}
+    fn test_data() {
+        let data = include_str!("data/test_day18.dat");
+        let (_solved, magnitude) = solve_sums(data);
+        let max_pair = max_pair(data);
+        assert_eq!(magnitude, 3488);
+        assert_eq!(max_pair, 3805);
+    }
+
+    #[test]
+    fn test_data_b() {
+        let data = include_str!("data/test_day18b.dat");
+        let (_solved, magnitude) = solve_sums(data);
+        let max_pair = max_pair(data);
+        assert_eq!(magnitude, 4140);
+        assert_eq!(max_pair, 3993);
+    }
 }

@@ -371,3 +371,50 @@ obvious sooner!
 
 Very nice variation again, from the previous days or high 
 efficiency (15th) and extra computer science-y (16th).
+
+### Day 18
+
+I woke up this morning and though _this looks fun_.
+
+Nested tree parsing, interesting production rules - again
+extremely thankful that I've been reading up on compiler
+design and parsing this year, and was able to implement
+pretty much as planned:
+
+* Use a stateful machine to walk through tokens left to right.
+* Have useful consume/peek/move left/right functions.
+* Have useful (try) consume/peek number (/pair) helper functions.
+
+The best advice for myself - do it by small pieces, check each 
+small piece, build everything together. Which meant that when I
+did make mistakes I was debugging very specific chunks of 
+functionality. Roughly in order:
+
+* Handle explosions. (Recognise explosions -> fix right -> fix left).
+* Handle splits. (Much simpler than explosions.)
+* Handle complete reduction.
+* Handle sums.
+* Handle magnitudes. (I didn't even think of this until I'd got
+the sums working properly.)
+
+The sort of problems I hit were:
+
+* Off by one errors when working back to the 'left' number.
+* Not trying explodes again after every *single* split.
+* Look ahead for consuming '[x,y]' and restoring the state
+if not found. (This was easy for the explode portion as the
+problem was set up so that the depth counter unambiguously 
+signalled when you needed to read a pair, so no need to peek.
+I found more complications when trying to calculate 
+magnitudes in this way.)
+
+However, there weren't too many surprises, and the examples
+given were rich enough to find all my problems. Once the
+example input passed, my real data ran without problem.
+
+The second part I just did an exhaustive pair check. I didn't
+obviously see any quick shortcuts given the non-trivial rules.
+As a result the second part was a check that the first part was
+_efficient enough_. As it stands, both parts complete for me
+in about a second. There are almost definitely some improvements
+but I don't think anything many orders of magnitude.
