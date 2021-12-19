@@ -418,3 +418,48 @@ As a result the second part was a check that the first part was
 _efficient enough_. As it stands, both parts complete for me
 in about a second. There are almost definitely some improvements
 but I don't think anything many orders of magnitude.
+
+### Day 19
+
+Woke up early, scanned through through problem and smiled.
+Given a number of overlapping 3D scans, work out how they fit together.
+
+That's the hard bit. Count the points and separation once you've
+re-assembled the scans isn't too bad.
+
+Flashbacks to the last years sea monster map, which I wasted far
+too much time on. Key differences are:
+
+* This is in 3D!
+* Alignment is on points, not edges.
+* What you do with the points when you've found them is
+significantly easier, I'm thinking to compensate for the
+more complicated data.
+
+Happily, having learnt my lessons, I went through this more 
+carefully and got through the problem much more quickly and
+without any major problems. One thing I did do different was
+put in sanity checks that when I performed alignment for a single
+point, that point really did align with the transform I worked out.
+
+Key observations which made life easier:
+* You don't need to align all axes at once. Just start with one
+axis.
+* Again work in stages. Check you can align a single point, then 
+a scanner with an x direction, then a scanner with all directions.
+* Don't duplicate your point transformation logic. I think this is
+what broke me last year. As long as you keep transforming
+consistently, it doesn't matter exactly how you track your
+transforms.
+
+To elaborate on the last point, the things that can get confused
+are like: Did I offset the flipped value? Did I offset then rotate?
+
+For part 2, I rushed through and calculated beacon distances rather 
+than scanner distances, but even with that number, an O(n^2) algorithm
+isn't that costly. Quick shortcut for finding a scanners position - 
+transform the origin point.
+
+I'd be willing to guess that this will be the toughest problem this
+year, although happy to be proved wrong. Looking at the stats page
+people are definitely feeling the difficulty ramping up.

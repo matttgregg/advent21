@@ -6,23 +6,80 @@ pub struct Day {}
 
 impl DaySolver for Day {
     fn solve(&self) -> DayResult {
-        let data = include_str!("data/test_day19.dat");
+        let data = include_str!("data/day19.dat");
         let start = SystemTime::now();
 
-        let scanners = load_scanners(data);
-        println!("Read {} scanners: {:?}", scanners.len(), scanners);
-        align(&scanners[0], &scanners[1]);
+        let mut scanners = load_scanners(data);
+        let (beacons, separation) = align_all(&mut scanners);
 
         let timed = SystemTime::now().duration_since(start).unwrap();
-        let description = format!("");
+        let description = format!(
+            "After alignment, deduced {} beacons. Largest scanner separation is {} .",
+            beacons, separation
+        );
 
         DayResult {
             description,
-            part1: format!("{}", 0),
-            part2: format!("{}", 0),
+            part1: format!("{}", beacons),
+            part2: format!("{}", separation),
             timing_us: timed.as_micros(),
         }
     }
+}
+
+fn align_all(scanners: &mut Vec<Scanner>) -> (usize, i64) {
+    let scanner_count = scanners.len();
+    let mut worklist = vec![0usize];
+    let mut aligned = HashMap::new();
+    let mut scanner_origins: Vec<Point> = vec![[0, 0, 0]];
+    aligned.insert(0, true);
+
+    while !worklist.is_empty() {
+        let working = worklist.pop().unwrap();
+        for i in 0..scanner_count {
+            if aligned.contains_key(&i) {
+                continue;
+            }
+
+            if let Some(transform) = align(&scanners[working], &scanners[i]) {
+                scanners[i].offset = transform.offset;
+                scanners[i].flips = transform.flip;
+                scanners[i].permutation = transform.permutation;
+                scanner_origins.push(transformed(
+                    &[0, 0, 0],
+                    transform.permutation,
+                    transform.offset,
+                    transform.flip,
+                ));
+                worklist.push(i);
+                aligned.insert(i, true);
+            }
+        }
+    }
+
+    // Now try to find all the points.
+    let mut all_points = HashMap::new();
+    for scanner in scanners {
+        for i in 0..scanner.points.len() {
+            all_points.insert(scanner.transformed_point(i), true);
+        }
+    }
+
+    let mut max_distance = 0;
+    for i in 0..scanner_origins.len() {
+        for j in 0..scanner_origins.len() {
+            let separation = manhattan(&scanner_origins[i], &scanner_origins[j]);
+            if separation > max_distance {
+                max_distance = separation;
+            }
+        }
+    }
+
+    (all_points.len(), max_distance)
+}
+
+fn manhattan(a: &Point, b: &Point) -> i64 {
+    (a[0] - b[0]).abs() + (a[1] - b[1]).abs() + (a[2] - b[2]).abs()
 }
 
 type Point = [i64; 3];
@@ -51,6 +108,13 @@ impl Scanner {
     }
 }
 
+#[derive(Debug)]
+struct Transform {
+    permutation: [usize; 3],
+    offset: [i64; 3],
+    flip: [bool; 3],
+}
+
 fn transformed(p: &Point, permutation: [usize; 3], offset: [i64; 3], flip: [bool; 3]) -> Point {
     let mut point = [0; 3];
 
@@ -64,7 +128,7 @@ fn transformed(p: &Point, permutation: [usize; 3], offset: [i64; 3], flip: [bool
 }
 
 // Try to align scanner b with scanner a.
-fn align(a: &Scanner, b: &Scanner) {
+fn align(a: &Scanner, b: &Scanner) -> Option<Transform> {
     // Hash all the a x-values for checking for alignment.
     let mut x_lookup = HashMap::new();
     for a_p in &a.points {
@@ -98,16 +162,17 @@ fn align(a: &Scanner, b: &Scanner) {
                     }
 
                     if aligned >= 12 {
-                        println!(
-                            "Alignement found for Permutation {:?} Flips {:?} Offset {:?} ",
-                            permutation, flip, offset
-                        );
-                        return full_align_from_x(a, b, i_a, i_b, *permutation, offset, *flip);
+                        let full_transform =
+                            full_align_from_x(a, b, i_a, i_b, *permutation, offset, *flip);
+                        if full_transform.is_some() {
+                            return full_transform;
+                        }
                     }
                 }
             }
         }
     }
+    None
 }
 
 // Given an alignment on the x-axis, find an alignment of the remaining points.
@@ -119,7 +184,7 @@ fn full_align_from_x(
     permutation: [usize; 3],
     offset: [i64; 3],
     flip: [bool; 3],
-) {
+) -> Option<Transform> {
     // There are only two further permutations.
     let permutations = [
         [permutation[0], permutation[1], permutation[2]],
@@ -161,20 +226,22 @@ fn full_align_from_x(
             }
 
             if matched >= 12 {
-                println!(
-                    "Found full alignment on {} points, Permutation {:?}, Offset {:?}, Flip {:?}",
-                    matched, try_permutation, try_offset, try_flip
-                );
-                return;
+                return Some(Transform {
+                    permutation: *try_permutation,
+                    offset: try_offset,
+                    flip: *try_flip,
+                });
             }
         }
     }
+
+    None
 }
 
 // Load all scanners from test input.
 fn load_scanners(data: &str) -> Vec<Scanner> {
     let mut scanners = vec![];
-    let mut current_scenner = Scanner::blank();
+    let mut current_scanner = Scanner::blank();
     for l in data.lines() {
         if l.is_empty() {
             continue;
@@ -182,10 +249,10 @@ fn load_scanners(data: &str) -> Vec<Scanner> {
 
         let on_whitespace = l.split_whitespace().collect::<Vec<&str>>();
         if on_whitespace.len() >= 3 {
-            if current_scenner.points.len() > 0 {
-                scanners.push(current_scenner);
+            if current_scanner.points.len() > 0 {
+                scanners.push(current_scanner);
             }
-            current_scenner = Scanner::blank();
+            current_scanner = Scanner::blank();
         } else {
             let p = l
                 .split(",")
@@ -199,8 +266,12 @@ fn load_scanners(data: &str) -> Vec<Scanner> {
                 point[i] = p[i];
             }
 
-            current_scenner.points.push(point);
+            current_scanner.points.push(point);
         }
+    }
+
+    if current_scanner.points.len() > 0 {
+        scanners.push(current_scanner);
     }
 
     scanners
@@ -211,5 +282,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_data() {}
+    fn test_data() {
+        let data = include_str!("data/test_day19.dat");
+        let mut scanners = load_scanners(data);
+        let (beacons, separation) = align_all(&mut scanners);
+        assert_eq!(beacons, 79);
+        assert_eq!(separation, 3621);
+    }
 }
