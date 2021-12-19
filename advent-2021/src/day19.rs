@@ -140,7 +140,15 @@ fn align(a: &Scanner, b: &Scanner) -> Option<Transform> {
         for flip in [[false, false, false], [true, false, false]].iter() {
             //  Try an align on x coords first.
             for (i_b, b_p) in b.points.iter().enumerate() {
+                if b.points.len() - i_b < 12 {
+                    // If there was alignment, we'd have found by now.
+                    break;
+                }
                 for (i_a, a_p) in a.points.iter().enumerate() {
+                    if a.points.len() - i_a < 12 {
+                        // If there was alignment, we'd have found by now.
+                        break;
+                    }
                     // If we align these two points, how many other points align?
                     let a_point = transformed(a_p, a.permutation, a.offset, a.flips);
                     let b_point = transformed(b_p, *permutation, [0, 0, 0], *flip);
@@ -154,10 +162,15 @@ fn align(a: &Scanner, b: &Scanner) -> Option<Transform> {
 
                     // How many other points align when we do this?
                     let mut aligned = 0;
-                    for try_p in &b.points {
+                    for (p_i, try_p) in b.points.iter().enumerate() {
                         let try_point_x = transformed(try_p, *permutation, offset, *flip)[0];
                         if x_lookup.contains_key(&try_point_x) {
                             aligned += 1;
+                        }
+
+                        if aligned + b.points.len() - p_i < 12 {
+                            // No point in checking the rest, we can't reach 12.
+                            break;
                         }
                     }
 
