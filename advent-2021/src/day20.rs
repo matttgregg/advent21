@@ -36,14 +36,19 @@ impl DaySolver for Day {
 
 struct ScannerData {
     algorithm: Vec<bool>,
-    data: Vec<Vec<bool>>,
+    // Data can either be 0 (.), 1 (#), or 2 unset yet.
+    data: Vec<Vec<u8>>,
+    buffering: usize,
+    inf_value: u8,
 }
 
-fn bools_to_int(from: &[bool; 9]) -> usize {
+fn bools_to_int(from: &[u8; 9], inf_value: u8) -> usize {
     let mut power = 256;
     let mut result = 0;
     for i in 0..9 {
-        if from[i] {
+        let digit = if from[i] > 1 { inf_value } else { from[i] };
+
+        if digit != 0 {
             result += power;
         }
         power /= 2;
@@ -52,15 +57,36 @@ fn bools_to_int(from: &[bool; 9]) -> usize {
 }
 
 impl ScannerData {
+    #[allow(dead_code)]
+    fn print(&self) -> String {
+        let mut lines = vec![];
+        for l in &self.data {
+            let line = l
+                .iter()
+                .map(|c| {
+                    if *c == 0u8 {
+                        "."
+                    } else if *c == 1u8 {
+                        "#"
+                    } else {
+                        "_"
+                    }
+                })
+                .collect::<Vec<&str>>();
+            lines.push(line.join(""));
+        }
+        lines.join("\n")
+    }
+
     fn enhance(&mut self) -> usize {
         let mut to_write = vec![];
         let mut to_blank = vec![];
         let mut lit = to_write.len();
+        self.buffering -= 1;
 
         // Fill our scratch buffer
-        for i in 1..(self.data.len() - 1) {
-            let mut row_string = vec![];
-            for j in 1..(self.data[i].len() - 1) {
+        for i in (1 + self.buffering)..(self.data.len() - self.buffering - 1) {
+            for j in (1 + self.buffering)..(self.data[i].len() - self.buffering - 1) {
                 // Read the number.
                 let bools = [
                     self.data[i - 1][j - 1],
@@ -73,52 +99,39 @@ impl ScannerData {
                     self.data[i + 1][j],
                     self.data[i + 1][j + 1],
                 ];
-                let val = bools_to_int(&bools);
-                row_string.push(format!("[{:3}]", val));
+                let val = bools_to_int(&bools, self.inf_value);
                 if self.algorithm[val] {
                     // Note squares which are lit.
                     lit += 1;
-                    if !self.data[i][j] {
+                    if self.data[i][j] != 1 {
                         // Note this value as needing update.
                         to_write.push((i, j));
                     }
-                } else if self.data[i][j] {
+                } else if self.data[i][j] != 0 {
                     // This is an on square that we need to turn off.
                     to_blank.push((i, j));
                 }
             }
         }
 
-        // If the initial algorithm bit is zero, we also need to flip the boundaries.
-        let flipped = !self.data[0][0];
+        // If the initial algorithm bit is zero, we also need to flip the value at infinity.
         if self.algorithm[0] {
-            for i in 0..self.data.len() {
-                let len = self.data[i].len();
-                self.data[i][0] = flipped;
-                self.data[i][len - 1] = flipped;
-            }
-            for i in 0..self.data[0].len() {
-                self.data[0][i] = flipped;
-            }
-            let len = self.data.len();
-            for i in 0..self.data[len - 1].len() {
-                self.data[len - 1][i] = flipped;
-            }
+            self.inf_value = if self.inf_value == 1 { 0 } else { 1 };
         }
 
         for w in to_write {
-            self.data[w.0][w.1] = true;
+            self.data[w.0][w.1] = 1;
         }
 
         for w in to_blank {
-            self.data[w.0][w.1] = false;
+            self.data[w.0][w.1] = 0;
         }
 
         lit
     }
 
     fn new(raw_data: &str, max_iters: usize) -> Self {
-        let buffer_size = max_iters + 2;
+        let buffer_size = max_iters + 1;
         let mut data_size = 0;
         let mut data = vec![];
         let mut algorithm = vec![];
@@ -133,24 +146,29 @@ impl ScannerData {
                 if data.len() == 0 {
                     // Initialize with enough space for all iterations.
                     data_size = l.len();
-                    data = vec![vec![false; data_size + 2 * buffer_size]; buffer_size]
+                    data = vec![vec![3; data_size + 2 * buffer_size]; buffer_size]
                 }
                 // Collect this line.
-                let mut data_line = vec![false; buffer_size];
-                let mut read_data = l.chars().map(|c| c == '#').collect::<Vec<bool>>();
+                let mut data_line = vec![3; buffer_size];
+                let mut read_data = l
+                    .chars()
+                    .map(|c| if c == '#' { 1 } else { 0 })
+                    .collect::<Vec<u8>>();
                 data_line.append(&mut read_data);
-                data_line.append(&mut vec![false; buffer_size]);
+                data_line.append(&mut vec![3; buffer_size]);
                 data.push(data_line);
             }
         }
 
         // We finally pad the data array.
-        data.append(&mut vec![
-            vec![false; data_size + 2 * buffer_size];
-            buffer_size
-        ]);
+        data.append(&mut vec![vec![3; data_size + 2 * buffer_size]; buffer_size]);
 
-        Self { algorithm, data }
+        Self {
+            algorithm,
+            data,
+            buffering: max_iters,
+            inf_value: 0,
+        }
     }
 }
 
