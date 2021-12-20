@@ -231,10 +231,14 @@ fn full_align_from_x(
             );
 
             let mut matched = 0;
-            for p_b in &b.points {
+            for (tries, p_b) in b.points.iter().enumerate() {
                 let try_point = transformed(p_b, *try_permutation, try_offset, *try_flip);
                 if point_map.contains_key(&try_point) {
                     matched += 1;
+                }
+                if matched + b.points.len() - tries < 12 {
+                    // Not enough points remaining to match.
+                    break;
                 }
             }
 
