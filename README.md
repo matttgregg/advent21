@@ -463,3 +463,11 @@ transform the origin point.
 I'd be willing to guess that this will be the toughest problem this
 year, although happy to be proved wrong. Looking at the stats page
 people are definitely feeling the difficulty ramping up.
+
+### Day 20
+
+As suspected a bit of a relaxing one after yesterday. Mostly it's 
+a game of life variation - a grid of data with some update rules.
+There's one particular gotcha to watch out for. Although I didn't 
+account for it initially, I _suspected_ it might come up and 
+visualizations confirmed it. As I result this wasn't frustrating.
