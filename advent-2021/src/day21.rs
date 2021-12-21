@@ -1,6 +1,8 @@
 use crate::{DayResult, DaySolver};
-use std::collections::HashMap;
 use std::time::SystemTime;
+
+// The maximum hash for a game = 21 * 21 * 10 * 10 * 2 (scores x pawn locations x player turn).
+const GAMEHASHMAX: usize = 88200;
 
 pub struct Day {}
 
@@ -13,7 +15,6 @@ impl DaySolver for Day {
         let mut dirac = DiracGame::new();
         let init_state = GameState::new(6, 1);
         let wins = dirac.play(&init_state);
-        println!("Full dirac completed with :: {} vs {}", wins.0, wins.1);
         let best_wins = if wins.0 > wins.1 { wins.0 } else { wins.1 };
 
         let timed = SystemTime::now().duration_since(start).unwrap();
@@ -34,14 +35,21 @@ impl DaySolver for Day {
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct GameState {
-    player: u8,   // 4
-    p1_pos: u8,   // 16
-    p2_pos: u8,   // 16
-    p1_score: u8, // 32
-    p2_score: u8, // 32
+    player: u8,   // 2
+    p1_pos: u8,   // 10
+    p2_pos: u8,   // 10
+    p1_score: u8, // 21
+    p2_score: u8, // 21
 }
 
 impl GameState {
+    fn hash(&self) -> usize {
+        (((self.p2_score as usize * 21 + self.p1_score as usize) * 10 + self.p2_pos as usize) * 10
+            + self.p1_pos as usize)
+            * 2
+            + self.player as usize
+    }
+
     fn new(p1: u8, p2: u8) -> Self {
         Self {
             player: 0,
@@ -55,26 +63,17 @@ impl GameState {
 
 struct DiracGame {
     // The cache returns (Player 1 wins, Player 2 wins). (0,0) is undecided.
-    cache: HashMap<GameState, (u128, u128)>,
+    second_cache: [(u128, u128); GAMEHASHMAX],
 }
 
 impl DiracGame {
     fn new() -> Self {
         Self {
-            cache: HashMap::new(),
+            second_cache: [(0u128, 0u128); GAMEHASHMAX],
         }
     }
 
     fn play(&mut self, state: &GameState) -> (u128, u128) {
-        // Check for a cache hit:
-        if let Some(wins) = self.cache.get(state) {
-            return *wins;
-        }
-
-        //println!("Playing game: {:?}", state);
-
-        // Otherwise we need to work it out.
-
         // Check if one player has won.
         if state.p1_score >= 21 {
             return (1, 0);
@@ -83,9 +82,17 @@ impl DiracGame {
             return (0, 1);
         }
 
+        // Check for a cache hit:
+        let cached = self.second_cache[state.hash()];
+        if cached != (0, 0) {
+            return cached;
+        }
+
+        // Otherwise we need to work it out.
         let mut wins = (0, 0);
         // Otherwise we need to play all the possible roll states.
-        // Note here that I've explicitly created all 27 combinations of 3 rolls [1,2,3].
+        // Note here that I've explicitly created all combinations of 3 rolls [1,2,3].
+        // It's important to account for the fact that some values occur in multiple distinct rolls.
         for (roll, freq) in [(3, 1), (4, 3), (5, 6), (6, 7), (7, 6), (8, 3), (9, 1)].iter() {
             // For simplicity, handle the two players separately.
             if state.player == 0 {
@@ -115,7 +122,8 @@ impl DiracGame {
             }
         }
 
-        self.cache.insert(state.clone(), wins);
+        //self.cache.insert(state.clone(), wins);
+        self.second_cache[state.hash()] = wins;
         wins
     }
 }

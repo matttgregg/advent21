@@ -503,3 +503,8 @@ meant that I was hitting an unhelpful rust error when
 allocating my large empty array. I may revisit it, but can't
 imagine it will provide orders of magnitude performance versus
 the current code.
+
+
+_Update_ : Did go back and re-implement as a vector with a 
+hand written hash, and approx. 10x improvement. Down to 
+around 2ms on my laptop.
