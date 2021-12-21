@@ -63,13 +63,13 @@ impl GameState {
 
 struct DiracGame {
     // The cache returns (Player 1 wins, Player 2 wins). (0,0) is undecided.
-    second_cache: [(u128, u128); GAMEHASHMAX],
+    second_cache: Box<[(u128, u128); GAMEHASHMAX]>,
 }
 
 impl DiracGame {
     fn new() -> Self {
         Self {
-            second_cache: [(0u128, 0u128); GAMEHASHMAX],
+            second_cache: Box::new([(0u128, 0u128); GAMEHASHMAX]),
         }
     }
 
