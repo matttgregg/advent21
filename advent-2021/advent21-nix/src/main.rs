@@ -1,10 +1,9 @@
 mod utils;
 
-use advent_2021;
+use advent_2021::DayResult;
 use regex::Regex;
 use std::env;
 use std::process;
-use advent_2021::DayResult;
 
 fn main() {
     match day_arg(env::args()) {
@@ -12,7 +11,7 @@ fn main() {
             for (i, day) in advent_2021::days().iter().enumerate() {
                 pretty_print_day(i, &day.solve());
             }
-        },
+        }
         Some(i) => {
             let days = advent_2021::days();
             if i as usize > days.len() {
@@ -27,22 +26,24 @@ fn main() {
 
 fn pretty_print_day(day_index: usize, solution: &DayResult) {
     utils::print_day(day_index + 1);
-    println!("{}\n\t[{}]\n",
-             brighten(&solution.description, &solution.part1, &solution.part2),
-             pretty_us(solution.timing_us));
-
+    println!(
+        "{}\n\t[{}]\n",
+        brighten(&solution.description, &solution.part1, &solution.part2),
+        pretty_us(solution.timing_us)
+    );
 }
 
-fn brighten(desc: &String, p1: &String, p2: &String) -> String {
+fn brighten(desc: &str, p1: &str, p2: &str) -> String {
     let re1 = Regex::new(p1).unwrap();
     let re2 = Regex::new(p2).unwrap();
     let replaced = re1.replace_all(desc, utils::fmt_bright(p1)).to_string();
-    re2.replace_all(&replaced, utils::fmt_bright(p2)).to_string()
+    re2.replace_all(&replaced, utils::fmt_bright(p2))
+        .to_string()
 }
 
 fn pretty_us(micros: u128) -> String {
-    if micros > 1000_000 {
-        format!("{}s", micros / 1000_000)
+    if micros > 1_000_000 {
+        format!("{}s", micros / 1_000_000)
     } else if micros > 1000 {
         format!("{}ms", micros / 1000)
     } else {
