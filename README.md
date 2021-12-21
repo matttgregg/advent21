@@ -471,3 +471,35 @@ a game of life variation - a grid of data with some update rules.
 There's one particular gotcha to watch out for. Although I didn't 
 account for it initially, I _suspected_ it might come up and 
 visualizations confirmed it. As I result this wasn't frustrating.
+
+### Day 21
+
+Another fun one. The first part is a fairly straightforward _play
+this game in code_ . (Straightforward doesn't mean I don't get 
+caught up in silly off-by-one errors in the modulo arithmetic. As
+always copious checks and debugging statements are your friends.)
+
+As is often the case for these games there are a reasonable number
+of hard coded constants. I could parameterize *but* without knowing
+what's going to be useful for the second part, this can be wasted 
+effore. (e.g. I did parameterize die size, but didn't really get 
+any use from it.)
+
+In the end I didn't re-use any code from the first part in my second
+part.
+
+For the second part - just a look at the size of the results should
+make it clear that you're not going to be simulating every single 
+game. So, we fall into:
+
+* How to paramaterise the 'play a round' step sanely.
+* What state to track to allow us to cache results.
+* Any other observations to squeeze out performance.
+
+As usual I've gone for aggressive caching while avoiding
+too much complication. I did start fiddling with my own hashing
+and a straight array to avoid hash lookups, but mistakes
+meant that I was hitting an unhelpful rust error when 
+allocating my large empty array. I may revisit it, but can't
+imagine it will provide orders of magnitude performance versus
+the current code.
