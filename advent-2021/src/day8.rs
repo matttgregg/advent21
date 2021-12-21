@@ -23,7 +23,7 @@ impl DaySolver for Day {
 }
 
 fn count_uniques(data: &str) -> i32 {
-    let lines = data.lines().map(|l| l.split("|").collect::<Vec<&str>>()[1])
+    let lines = data.lines().map(|l| l.split('|').collect::<Vec<&str>>()[1])
         .map(|l| l.split_whitespace().collect::<Vec<&str>>());
 
     let mut total_uniques = 0;
@@ -46,7 +46,7 @@ fn decode(data: &str) -> usize {
 
 fn decode_line(data: &str) -> usize {
     // Get the front and back parts.
-    let front_back: Vec<&str> = data.split("|").collect();
+    let front_back: Vec<&str> = data.split('|').collect();
     let front: Vec<&str> = front_back[0].split_whitespace().collect();
     let back: Vec<&str> = front_back[1].split_whitespace().collect();
 
@@ -59,7 +59,7 @@ fn decode_line(data: &str) -> usize {
     for r in back {
         let repr = Representation::from(r);
         for (i, decoded) in decoder.iter().enumerate() {
-            if repr.is(&decoded) {
+            if repr.is(decoded) {
                result += i * power;
             }
         }

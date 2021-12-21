@@ -141,14 +141,14 @@ fn play(board_size: usize, p1: usize, p2: usize, die_size: usize) -> u128 {
         let mut three_roll = 0;
         if next_die + 2 < die_size {
             three_roll = (3 * next_die + 3) % board_size; // d, d+1, d+2 = 3d + 3
-            next_die = next_die + 3;
+            next_die += 3;
         } else {
             // We need to carefully handle the wrap around.
             for _ in 0..3 {
                 three_roll += next_die;
                 next_die = (next_die % die_size) + 1;
             }
-            three_roll = three_roll % board_size;
+            three_roll %= board_size;
         }
         rolls += 3;
 

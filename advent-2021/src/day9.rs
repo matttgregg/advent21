@@ -24,13 +24,13 @@ impl DaySolver for Day {
     }
 }
 
-fn biggest_three(sinks: &Vec<Point>, map: &Vec<Vec<u8>>) -> (u64, u64, u64) {
+fn biggest_three(sinks: &[Point], map: &[Vec<u8>]) -> (u64, u64, u64) {
     let mut sizes = all_sizes(sinks, map);
-    sizes.sort();
+    sizes.sort_unstable();
     (sizes[sizes.len() - 1], sizes[sizes.len() - 2], sizes[sizes.len() -3])
 }
 
-fn all_sizes(sinks: &Vec<Point>, map: &Vec<Vec<u8>>) -> Vec<u64> {
+fn all_sizes(sinks: &[Point], map: &[Vec<u8>]) -> Vec<u64> {
     let mut sizes =vec![];
     for sink in sinks {
         sizes.push(size(sink, map));
@@ -39,11 +39,11 @@ fn all_sizes(sinks: &Vec<Point>, map: &Vec<Vec<u8>>) -> Vec<u64> {
     sizes
 }
 
-fn size(from: &Point, map: &Vec<Vec<u8>>) -> u64 {
-    size_iter(from, &map, &mut HashMap::new())
+fn size(from: &Point, map: &[Vec<u8>]) -> u64 {
+    size_iter(from, map, &mut HashMap::new())
 }
 
-fn size_iter(from: &Point, map: &Vec<Vec<u8>>, seen: &mut HashMap<Point, bool>) -> u64 {
+fn size_iter(from: &Point, map: &[Vec<u8>], seen: &mut HashMap<Point, bool>) -> u64 {
     seen.insert(from.clone(), true);
     // Casees for skipping
     // : On the edge
@@ -52,19 +52,19 @@ fn size_iter(from: &Point, map: &Vec<Vec<u8>>, seen: &mut HashMap<Point, bool>) 
     // If these are all false, recurse to the neighbour.
     let n0 = if from.i == 0 || seen.contains_key(&from.shift(-1, 0)) || map[from.i - 1][from.j] == 9 {
         0 } else {
-        size_iter(&from.shift(-1, 0), &map, seen)
+        size_iter(&from.shift(-1, 0), map, seen)
     };
     let n1 = if from.i + 1 == map.len() || seen.contains_key(&from.shift(1, 0)) || map[from.i + 1][from.j] == 9 {
         0 } else {
-        size_iter(&from.shift(1, 0), &map, seen)
+        size_iter(&from.shift(1, 0), map, seen)
     };
     let n2 = if from.j == 0 || seen.contains_key(&from.shift(0, -1)) || map[from.i][from.j - 1] == 9 {
         0 } else {
-        size_iter(&from.shift(0, -1), &map, seen)
+        size_iter(&from.shift(0, -1), map, seen)
     };
     let n3 = if from.j + 1 == map[from.i].len() || seen.contains_key(&from.shift(0, 1)) || map[from.i][from.j + 1] == 9 {
         0 } else {
-        size_iter(&from.shift(0, 1), &map, seen)
+        size_iter(&from.shift(0, 1), map, seen)
     };
 
     1 + n0 + n1 + n2 + n3

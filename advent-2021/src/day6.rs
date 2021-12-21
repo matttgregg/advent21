@@ -41,8 +41,8 @@ pub fn evolve(from: &str, generations: usize) -> u64 {
     let mut fishes = vec![0u64;9];
     let mut total_fish = 0;
     // The input is a comma separated list of timers.
-    for i in from.split(",").map(|c| c.parse::<usize>().unwrap()) {
-        fishes[i] = fishes[i] + 1;
+    for i in from.split(',').map(|c| c.parse::<usize>().unwrap()) {
+        fishes[i] += 1;
         total_fish += 1;
     }
 
@@ -51,7 +51,7 @@ pub fn evolve(from: &str, generations: usize) -> u64 {
         // Use built in rotate for vector.
         fishes.rotate_left(1);
         // All the birthing fish reset to 6 - these are the same as the fish that just gave birth, 0 -> 8.
-        fishes[6] = fishes[6] + fishes[8];
+        fishes[6] += fishes[8];
         total_fish += fishes[8];
     }
 

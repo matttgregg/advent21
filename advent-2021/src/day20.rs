@@ -45,8 +45,8 @@ struct ScannerData {
 fn bools_to_int(from: &[u8; 9], inf_value: u8) -> usize {
     let mut power = 256;
     let mut result = 0;
-    for i in 0..9 {
-        let digit = if from[i] > 1 { inf_value } else { from[i] };
+    for f in from.iter().take(9) {
+        let digit = if *f > 1 { inf_value } else { *f };
 
         if digit != 0 {
             result += power;
@@ -143,7 +143,7 @@ impl ScannerData {
             } else if !scanning_data {
                 algorithm = l.chars().map(|c| c == '#').collect();
             } else {
-                if data.len() == 0 {
+                if data.is_empty() {
                     // Initialize with enough space for all iterations.
                     data_size = l.len();
                     data = vec![vec![3; data_size + 2 * buffer_size]; buffer_size]

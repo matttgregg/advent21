@@ -1,4 +1,3 @@
-use advent_2021;
 use std::env;
 use std::process;
 use advent_2021::DayResult;
@@ -30,8 +29,8 @@ fn pretty_print_day(day_index: usize, solution: &DayResult) {
 }
 
 fn pretty_us(micros: u128) -> String {
-    if micros > 1000_000 {
-        format!("{}s", micros / 1000_000)
+    if micros > 1_000_000 {
+        format!("{}s", micros / 1_000_000)
     } else if micros > 1000 {
         format!("{}ms", micros / 1000)
     } else {

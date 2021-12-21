@@ -146,7 +146,7 @@ impl BingoGame {
             match parse_mode {
                 ParsingMode::ParseCalls => {
                     // We expect a line of comma separated calls.
-                    calls = line.split(",").map(|x|  x.parse::<i32>().unwrap()).collect();
+                    calls = line.split(',').map(|x|  x.parse::<i32>().unwrap()).collect();
                     parse_mode = ParsingMode::ParseBoard;
                 },
                 ParsingMode::ParseBoard => {

@@ -82,7 +82,7 @@ impl PolymerSystem {
         } else if from.1 == 0 {
             let mut freq = [0u64;26];
             freq[from.0.0 as usize] = 1;
-            self.cache.insert(from.clone(), freq.clone());
+            self.cache.insert(from.clone(), freq);
             freq
         } else if let Some(insertion) = self.rules.get(&from.0) {
             // We have a rule, so build the sum from the inner parts.
@@ -94,14 +94,14 @@ impl PolymerSystem {
             for i in 0..26 {
                 freq[i] += freq_second[i];
             }
-            self.cache.insert(from.clone(), freq.clone());
-            freq.clone()
+            self.cache.insert(from.clone(), freq);
+            freq
         } else {
             // No rule, so this pair remains untouched.
             let mut freq = [0u64;26];
             freq[from.0.0 as usize] = 1;
             self.cache.insert(from.clone(), freq);
-            freq.clone()
+            freq
         }
     }
 

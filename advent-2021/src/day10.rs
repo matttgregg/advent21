@@ -37,12 +37,12 @@ fn diagnose(data: &str) -> (u64, u64) {
         }
     }
 
-    completion_scores.sort();
+    completion_scores.sort_unstable();
     // Rust round *up* in this case.
     (error_score, completion_scores[(completion_scores.len()/2)])
 }
 
-fn score_completion(incomplete: &Vec<char>) -> u64 {
+fn score_completion(incomplete: &[char]) -> u64 {
     let mut score = 0;
     for c in incomplete.iter().rev() {
         score *= 5;

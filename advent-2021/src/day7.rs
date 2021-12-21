@@ -7,7 +7,7 @@ pub struct Day {}
 impl DaySolver for Day {
     fn solve(&self) -> DayResult {
         let data = include_str!("data/day7.dat");
-        let crabs: Vec<i32> = data.split(",").map(|c| c.parse::<i32>().unwrap()).collect();
+        let crabs: Vec<i32> = data.split(',').map(|c| c.parse::<i32>().unwrap()).collect();
         let start = SystemTime::now();
         let (target, fuel) = least_fuel(&crabs);
         let (target_crab, fuel_crab) = least_fuel_crabwise(&crabs);
@@ -37,7 +37,7 @@ pub fn least_fuel(crabs: &[i32]) -> (i32, i32) {
         sorted_crabs[i] = *crab;
     }
 
-    sorted_crabs.sort();
+    sorted_crabs.sort_unstable();
 
     // Now find the optimum.
     let mut target = sorted_crabs[0];
@@ -75,7 +75,7 @@ pub fn least_fuel_crabwise(crabs: &[i32]) -> (i32, i32) {
         sorted_crabs[i] = *crab;
     }
 
-    sorted_crabs.sort();
+    sorted_crabs.sort_unstable();
 
     // Now find the optimum.
     let mut target = 0;

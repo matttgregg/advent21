@@ -41,7 +41,7 @@ impl Caves {
         indices.insert(String::from("start"),start);
         indices.insert(String::from("end"),end);
         for line in data.lines() {
-            let caves = line.split("-").map(|s| format!("{}", s)).collect::<Vec<String>>();
+            let caves = line.split('-').map(String::from).collect::<Vec<String>>();
             let from = caves[0].clone();
             let to = caves[1].clone();
 
@@ -54,7 +54,7 @@ impl Caves {
             // Connect in both directions.
             let largest_idx = std::cmp::max(from_idx, to_idx);
             if largest_idx >= connections.len() {
-                connections.resize_with(largest_idx + 1, || vec![])
+                connections.resize_with(largest_idx + 1, Vec::new)
             }
             connections[from_idx].push(to_idx);
             connections[to_idx].push(from_idx);

@@ -106,7 +106,7 @@ impl CaveMap {
         }));
 
         costs_to[0][0] = 0;
-        while worklist.len() > 0 {
+        while !worklist.is_empty() {
             self.paths_update(&mut worklist, &mut costs_to);
         }
 
@@ -122,7 +122,7 @@ impl CaveMap {
     }
 
     // Check whether we can improve.
-    fn could_improve(&self, try_move: &TryMove, costs: &Vec<Vec<u64>>) -> bool {
+    fn could_improve(&self, try_move: &TryMove, costs: &[Vec<u64>]) -> bool {
         if costs[try_move.i][try_move.j] <= try_move.cost {
             false
         } else {
@@ -131,7 +131,7 @@ impl CaveMap {
         }
     }
 
-    fn could_beat(&self, try_move: &TryMove, costs: &Vec<Vec<u64>>) -> bool {
+    fn could_beat(&self, try_move: &TryMove, costs: &[Vec<u64>]) -> bool {
         let current_best = costs[self.full_grid_size - 1][self.full_grid_size - 1];
         self.best_case(try_move) < current_best
     }
@@ -193,7 +193,7 @@ impl CaveMap {
                 };
 
                 // Check whether this does lead to an improvement.
-                if self.could_improve(&new_move, &costs) {
+                if self.could_improve(&new_move, costs) {
                     costs[new_i][new_j] = new_cost;
                     worklist.push(Reverse(new_move))
                 }

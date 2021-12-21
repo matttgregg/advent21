@@ -61,10 +61,8 @@ fn smoothed(data: &[i32]) -> i32 {
         b = c;
         c = *v;
         let total = a + b + c;
-        if i > 2 {
-            if total > last {
-                increases += 1;
-            }
+        if i > 2 && total > last {
+            increases += 1;
         }
         last = total;
     }

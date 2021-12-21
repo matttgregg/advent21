@@ -132,7 +132,7 @@ fn align(a: &Scanner, b: &Scanner) -> Option<Transform> {
     // Hash all the a x-values for checking for alignment.
     let mut x_lookup = HashMap::new();
     for a_p in &a.points {
-        let a_point = transformed(&a_p, a.permutation, a.offset, a.flips);
+        let a_point = transformed(a_p, a.permutation, a.offset, a.flips);
         x_lookup.insert(a_point[0], true);
     }
 
@@ -157,7 +157,7 @@ fn align(a: &Scanner, b: &Scanner) -> Option<Transform> {
 
                     assert_eq!(
                         a_point[0],
-                        transformed(&b_p, *permutation, offset, *flip)[0]
+                        transformed(b_p, *permutation, offset, *flip)[0]
                     );
 
                     // How many other points align when we do this?
@@ -264,30 +264,27 @@ fn load_scanners(data: &str) -> Vec<Scanner> {
             continue;
         }
 
-        let on_whitespace = l.split_whitespace().collect::<Vec<&str>>();
-        if on_whitespace.len() >= 3 {
-            if current_scanner.points.len() > 0 {
+        if l.split_whitespace().count() >= 3 {
+            if !current_scanner.points.is_empty() {
                 scanners.push(current_scanner);
             }
             current_scanner = Scanner::blank();
         } else {
             let p = l
-                .split(",")
+                .split(',')
                 .collect::<Vec<&str>>()
                 .iter()
                 .map(|s| s.parse::<i64>().unwrap())
                 .collect::<Vec<i64>>();
             assert_eq!(p.len(), 3);
             let mut point = [0; 3];
-            for i in 0..3 {
-                point[i] = p[i];
-            }
+            point[..3].clone_from_slice(&p[..3]);
 
             current_scanner.points.push(point);
         }
     }
 
-    if current_scanner.points.len() > 0 {
+    if !current_scanner.points.is_empty() {
         scanners.push(current_scanner);
     }
 

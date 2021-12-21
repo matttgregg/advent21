@@ -42,7 +42,7 @@ mod tests {
     }
 }
 
-fn crossings(connections: &Vec<Connection>, with_diagonals: bool) -> i32 {
+fn crossings(connections: &[Connection], with_diagonals: bool) -> i32 {
     let mut covered: HashMap<Point, i32> = HashMap::new();
     // We walk each connection filling its points
     for conn in connections {
@@ -105,7 +105,7 @@ impl FromStr for Point {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // We expect a pair of int values
-        let parts: Vec<&str> = s.split(",").collect();
+        let parts: Vec<&str> = s.split(',').collect();
         if parts.len() != 2 {
             Err(format!("Could not parse {} as a point", s))
         } else {

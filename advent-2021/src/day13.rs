@@ -20,7 +20,7 @@ impl DaySolver for Day {
         DayResult {
             description,
             part1: format!("{}", single_folded.len()),
-            part2: format!("{}", plot),
+            part2: plot,
             timing_us: timed.as_micros(),
         }
     }
@@ -106,13 +106,13 @@ impl Transparency {
         let mut folds = vec![];
         for line in data.lines() {
             if line.starts_with("fold along y=") {
-                let val = line.split("=").collect::<Vec<&str>>()[1].parse::<u64>().unwrap();
+                let val = line.split('=').collect::<Vec<&str>>()[1].parse::<u64>().unwrap();
                 folds.push(Fold::FoldY(val))
             } else if line.starts_with("fold along x=") {
-                let val = line.split("=").collect::<Vec<&str>>()[1].parse::<u64>().unwrap();
+                let val = line.split('=').collect::<Vec<&str>>()[1].parse::<u64>().unwrap();
                 folds.push(Fold::FoldX(val))
-            } else if line.contains(",") {
-                let vals = line.split(",").collect::<Vec<&str>>();
+            } else if line.contains(',') {
+                let vals = line.split(',').collect::<Vec<&str>>();
                 points.push(Point(vals[0].parse::<u64>().unwrap(),
                                   vals[1].parse::<u64>().unwrap()));
             }

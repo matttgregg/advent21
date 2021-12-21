@@ -52,7 +52,7 @@ fn max_pair(data: &str) -> i64 {
 fn solve_sums(data: &str) -> (String, i64) {
     let mut current = String::from("");
     for l in data.lines() {
-        current = if current.len() == 0 {
+        current = if current.is_empty() {
             // First step, just load and solve.
             String::from(l)
         } else {
@@ -187,7 +187,7 @@ impl SnailMath {
             }
 
             let last_left = self.consume_number();
-            let number_len = last_left.to_string().chars().collect::<Vec<char>>().len();
+            let number_len = last_left.to_string().chars().count();
             self.push_number(last_left + l);
             // Get back to the right position, accounting for the number that we got rid of.
             for _ in 0..(since_last_digit - number_len) {

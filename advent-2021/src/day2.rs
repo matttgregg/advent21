@@ -45,14 +45,14 @@ pub fn horizontal_depth(data :&str) -> (i32, i32) {
     let mut depth = 0;
     let mut horizontal = 0;
     for line in lines {
-        let split: Vec<&str> = line.split(" ").collect();
+        let split: Vec<&str> = line.split(' ').collect();
         let val: i32 = split[1].parse().unwrap();
         if split[0] == "forward" {
-            horizontal = horizontal + val;
+            horizontal += val;
         } else if split[0] == "down" {
-            depth = depth + val;
+            depth += val;
         } else if split[0] == "up" {
-            depth = depth - val;
+            depth -= val;
         } else {
             panic!("Could not read {}", line);
         }
@@ -66,15 +66,15 @@ pub fn aiming_horizontal_depth(data :&str) -> (i32, i32) {
     let mut aim = 0;
     let mut horizontal = 0;
     for line in lines {
-        let split: Vec<&str> = line.split(" ").collect();
+        let split: Vec<&str> = line.split(' ').collect();
         let val: i32 = split[1].parse().unwrap();
         if split[0] == "forward" {
-            horizontal = horizontal + val;
-            depth = depth + aim * val
+            horizontal += val;
+            depth += aim * val
         } else if split[0] == "down" {
-            aim = aim + val;
+            aim += val;
         } else if split[0] == "up" {
-            aim = aim - val;
+            aim -= val;
         } else {
             panic!("Could not read {}", line);
         }

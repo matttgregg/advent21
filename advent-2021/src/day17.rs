@@ -1,6 +1,7 @@
 use crate::{DayResult, DaySolver};
 use std::collections::HashMap;
 use std::time::SystemTime;
+use std::collections::hash_map::Entry;
 
 pub struct Day {}
 
@@ -42,7 +43,7 @@ fn max_dy(x_min: i64, x_max: i64, y_min: i64, y_max: i64) -> (i64, usize) {
     for dy in y_min..=(-y_min) {
         let mut valid = try_target_dy(x_min, x_max, y_min, y_max, dy);
 
-        if valid.len() > 0 {
+        if !valid.is_empty() {
             max_dy = dy;
             all_valid.append(&mut valid);
         }
@@ -62,8 +63,8 @@ fn try_target_dy(x_min: i64, x_max: i64, y_min: i64, y_max: i64, dy: i64) -> Vec
                 for dx in dx_min..=dx_max {
                     // Check that we're not in a case where t has reached its limit.
                     if dx >= t {
-                        if !seen.contains_key(&(dx as i64)) {
-                            seen.insert(dx as i64, true);
+                        if let Entry::Vacant(e) = seen.entry(dx as i64) {
+                            e.insert(true);
                             acceptable.push((dx, dy));
                         }
                     }
@@ -73,8 +74,8 @@ fn try_target_dy(x_min: i64, x_max: i64, y_min: i64, y_max: i64, dy: i64) -> Vec
             // Also check whether we can add limiting dx values. (i.e. where we slow to a stop).
             let dxs = limiting_dx(x_min, x_max, t);
             for dx in dxs {
-                if !seen.contains_key(&(dx as i64)) {
-                    seen.insert(dx as i64, true);
+                if let Entry::Vacant(e) = seen.entry(dx as i64) {
+                    e.insert( true);
                     acceptable.push((dx, dy));
                 }
             }

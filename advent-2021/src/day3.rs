@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::time::SystemTime;
 use crate::{DayResult, DaySolver};
 
@@ -51,10 +52,10 @@ pub fn epsilon_gamma(data :&str, length: usize) -> (i32, i32) {
     for line in lines {
         for (i, c) in line.chars().enumerate() {
             if c == '1' {
-                counts[i] = counts[i] + 1;
+                counts[i] += 1;
             }
         }
-        line_count = line_count + 1;
+        line_count += 1;
     }
 
     // Not build the two numbers
@@ -63,17 +64,15 @@ pub fn epsilon_gamma(data :&str, length: usize) -> (i32, i32) {
     let mut power = 1;
 
     for bit in counts.iter().rev() {
-        if 2 * bit == line_count {
-            panic!("Exactly balanced chars.");
-        } else if 2 * bit > line_count {
+        match (2*bit).cmp(&line_count) {
+            Ordering::Equal => panic!("Exactly balanced chars."),
             // 1 is most common, so gets added to the gamma
-            gamma = gamma + power;
-        } else {
+            Ordering::Greater => gamma += power,
             // 1 is least common, so gets added to epsilon
-            epsilon = epsilon + power;
+            Ordering::Less => epsilon += power,
         }
 
-        power = power * 2;
+        power *= 2;
     }
 
     (epsilon, gamma)
@@ -146,9 +145,9 @@ fn int_of_str(s: &str) -> i32 {
     let mut res = 0;
     for c in s.chars().rev() {
         if c == '1' {
-           res = res + power;
+           res += power;
         }
-        power = power * 2;
+        power *= 2;
     }
 
     res
