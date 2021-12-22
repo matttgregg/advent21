@@ -508,3 +508,74 @@ the current code.
 _Update_ : Did go back and re-implement as a vector with a 
 hand written hash, and approx. 10x improvement. Down to 
 around 2ms on my laptop.
+
+_Update_ : After browsing reddit, I saw a comment that you
+can reduce the memory cost due to the results being symmetric.
+(i.e. The wins for player 1, player 2 are the same as those for
+player 2, player 1 with the scores reversed.) I tried this, it's
+a relatively minor bit of code to implement - it does save memory but
+runtime isn't particularly affected.
+
+_Update_ : Also noticed some interesting things about the stack
+allocation limits varying between systems. Although the array 
+version worked fine for mac, it failed both on windows and the
+linux versions run by github integrations. Switching to vectors
+to put allocation onto the heap cleared up this issue. (Interestingly
+simply boxing the array still caused problems for tests - I still need
+to work out why.)
+
+### Day 22
+
+This was an immensely satisfying day!
+
+The problem was well stated and clear, but how to do this efficiently
+was not immediately clear. Anyway, I started with a naive 
+implementation just to unlock part two - and unsurprisingly part
+two was to extend the analysis to the full spatial region.
+
+I had no idea how to do this. I don't have a background in
+computer graphics, but suspected this is something that would
+be done commonly in that case, simply looking at overlapping 
+rectangles. I avoided googling for 'overlapping rectangles' and instead
+had a coffee. These were the thoughts I had:
+
+* There are far too many points to track them all.
+* Try and think in 2D space.
+* If two rectangles overlap, the overlapping region is another rectangle.
+
+This got me thinking that I could always break two overlapping rectangles into
+multiple non-overlapping rectangles. e.g. If you take a rectangle out of the 
+middle of a rectangle, you'll get nine smaller disjoint rectangles.
+
+I briefly started coding on this and thought:
+* I'm going to get a lot of rectangles quickly.
+* And I haven't done anything smart for checking intersections - so it's 
+going to be roughly an n^2 cost.
+* The geometry for working out the sub rectangles is going to be a pain.
+
+So, I thought again on what I *really* wanted to know. I *really* wanted
+to just know how many cubes were lit, not exactly where they were. So for
+the overlapping rectangles, I just want to know the contributions of the various parts.
+
+This got me going on the right track:
+
+* I only need to know contributions.
+* For *on* cuboids, contributions are +1 for themselves, and -1 for overlaps with other lit cubes.
+* For *off* cubes there's a contribution of -1 for overlaps with other lit cubes, but no contribution
+for themselves on empty space, because they don't affect later cuboids.
+
+This meant that:
+* My overlap checks would still be (no. of cubes)^2 - but I wouldn't be creating quite so 
+many cubes. In particular, for 'off' cubes I'd only collect the intersections.
+
+The last tricky bit was working out the intersections with 'contribution -1' pieces - i.e.
+these patches which were compensating for overlapping 'on' segments, or active 'off' segments.
+A little bit of thinking, and debugging the tiniest example got me that last star.
+
+All in all, despite the n^2 in terms of cube count, this runs for me in ~60ms. Even within 
+this algorithm, there are almost definitely smart ways to squeeze out more performance. For example
+I wonder about clever ordering to make the intersection checks faster - but it's not 
+critical in the context of AoC. 
+
+I'll be interested to see the reddit take on this one. I see the completion rate is
+fairly low again, which doesn't surprise me.

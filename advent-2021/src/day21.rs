@@ -1,8 +1,8 @@
 use crate::{DayResult, DaySolver};
 use std::time::SystemTime;
 
-// The maximum hash for a game = 21 * 21 * 10 * 10 * 2 (scores x pawn locations x player turn).
-const GAMEHASHMAX: usize = 88200;
+// The maximum hash for a game = 21 * 21 * 10 * 10 (scores x pawn locations x player turn).
+const GAMEHASHMAX: usize = 44100;
 
 pub struct Day {}
 
@@ -33,7 +33,6 @@ impl DaySolver for Day {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct GameState {
     player: u8,   // 2
     p1_pos: u8,   // 10
@@ -44,10 +43,15 @@ struct GameState {
 
 impl GameState {
     fn hash(&self) -> usize {
-        (((self.p2_score as usize * 21 + self.p1_score as usize) * 10 + self.p2_pos as usize) * 10
-            + self.p1_pos as usize)
-            * 2
-            + self.player as usize
+        if self.player == 0 {
+            ((self.p2_score as usize * 21 + self.p1_score as usize) * 10 + self.p2_pos as usize)
+                * 10
+                + self.p1_pos as usize
+        } else {
+            ((self.p1_score as usize * 21 + self.p2_score as usize) * 10 + self.p1_pos as usize)
+                * 10
+                + self.p2_pos as usize
+        }
     }
 
     fn new(p1: u8, p2: u8) -> Self {
@@ -68,10 +72,8 @@ struct DiracGame {
 
 impl DiracGame {
     fn new() -> Self {
-        let second_cache= vec![(0u128, 0u128); GAMEHASHMAX];
-        Self {
-            second_cache,
-        }
+        let second_cache = vec![(0u128, 0u128); GAMEHASHMAX];
+        Self { second_cache }
     }
 
     fn play(&mut self, state: &GameState) -> (u128, u128) {
@@ -86,7 +88,11 @@ impl DiracGame {
         // Check for a cache hit:
         let cached = self.second_cache[state.hash()];
         if cached != (0, 0) {
-            return cached;
+            if state.player == 0 {
+                return cached;
+            } else {
+                return (cached.1, cached.0);
+            }
         }
 
         // Otherwise we need to work it out.
@@ -124,7 +130,11 @@ impl DiracGame {
         }
 
         //self.cache.insert(state.clone(), wins);
-        self.second_cache[state.hash()] = wins;
+        if state.player == 0 {
+            self.second_cache[state.hash()] = wins;
+        } else {
+            self.second_cache[state.hash()] = (wins.1, wins.0);
+        }
         wins
     }
 }
