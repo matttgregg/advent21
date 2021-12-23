@@ -579,3 +579,22 @@ critical in the context of AoC.
 
 I'll be interested to see the reddit take on this one. I see the completion rate is
 fairly low again, which doesn't surprise me.
+
+### Day 23
+
+This was an interesting one!
+
+For one thing it was at least as difficult as any other this year. There's quite a lot
+to keep track of, even once you recognise it as a disguised path finding algorithm.
+
+* The rules for which locations are accessible are non-trivial.
+* The rules for costs are non-trivial.
+* An A* like cost is non-trivial to work out, if you want to optimize that way.
+* Handling a general form for both parts is non-trivial and harder to optimize.
+
+Nevertheless, it's an interesting puzzle with a lot to work on. Definitely running at
+my slowest so far at ~3s, but this late in the day it's hard to build up the enthusiasm
+to further optimize right now.
+
+Final interesting thing to note, is that a lot of people found it easier to solve by
+hand! Despite that, there's a lot of satisfaction in writing out the generalized solution. 

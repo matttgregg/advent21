@@ -1,6 +1,7 @@
 use crate::day23::Contents::Empty;
 use crate::{DayResult, DaySolver};
-use std::collections::HashMap;
+use std::cmp::{Ord, Ordering, Reverse};
+use std::collections::{BinaryHeap, HashMap};
 use std::fmt;
 use std::time::SystemTime;
 
@@ -18,7 +19,7 @@ impl DaySolver for Day {
 
         let timed = SystemTime::now().duration_since(start).unwrap();
         let description = format!(
-            "Can get all the amphipods back for a cost of {}. After\
+            "Can get all the amphipods back for a cost of {}. After \
         unfolding, minimum energy is {}",
             best_cost, best_cost_unfolded
         );
@@ -33,6 +34,7 @@ impl DaySolver for Day {
 }
 
 // The burrow structure is quite complicated.
+#[derive(Eq)]
 struct Burrows {
     // There are four burrows, two deep. These are indexed.
     burrows: [Vec<Contents>; 4],
@@ -113,6 +115,24 @@ impl std::fmt::Display for Burrows {
     }
 }
 
+impl Ord for Burrows {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.cost.cmp(&other.cost)
+    }
+}
+
+impl PartialOrd for Burrows {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for Burrows {
+    fn eq(&self, other: &Self) -> bool {
+        self.state() == other.state() && self.cost == other.cost
+    }
+}
+
 impl Burrows {
     fn new(burrows: [Vec<Contents>; 4]) -> Self {
         Self {
@@ -132,6 +152,7 @@ impl Burrows {
         ])
     }
 
+    #[cfg(test)]
     fn test() -> Self {
         Burrows::new([
             vec![Contents::B, Contents::A],
@@ -246,14 +267,13 @@ impl Burrows {
                 }
 
                 // If non-empty, if home and all below are home, we'll leave this burrow as is.
-                if occupant.home() == burrow {
-                    if self.burrows[burrow]
+                if occupant.home() == burrow
+                    && self.burrows[burrow]
                         .iter()
                         .skip(depth + 1)
                         .all(|u| u.home() == burrow)
-                    {
-                        break;
-                    }
+                {
+                    break;
                 }
 
                 // We have something that wants to move! Where can it go?
@@ -265,7 +285,7 @@ impl Burrows {
 
                     if self.connected(burrow, above) {
                         moves.push(AMove {
-                            burrow: burrow,
+                            burrow,
                             depth,
                             above,
                             cost: self.burrows[burrow][depth].cost()
@@ -325,13 +345,11 @@ impl Burrows {
                 .join(""),
             self.burrows
                 .iter()
-                .map(|b| format!(
-                    "{}",
-                    b.iter()
-                        .map(|s| format!("{}", s))
-                        .collect::<Vec<String>>()
-                        .join(""),
-                ))
+                .map(|b| b
+                    .iter()
+                    .map(|s| format!("{}", s))
+                    .collect::<Vec<String>>()
+                    .join(""),)
                 .collect::<Vec<String>>()
                 .join(":"),
         )
@@ -340,17 +358,20 @@ impl Burrows {
 
 fn find_best_moves(from: &Burrows) -> (u64, Vec<AMove>) {
     let mut seen_states = HashMap::new();
-    let mut working = from
+    let mut working = BinaryHeap::new();
+    for b in from
         .available_moves()
         .iter()
         .map(|m| move_pod(from, m, false))
-        .collect::<Vec<Burrows>>();
+    {
+        working.push(Reverse(b));
+    }
+
     let mut best = u64::max_value();
     let mut best_moves = vec![];
 
     while !working.is_empty() {
-        working.sort_by_key(|b| u64::max_value() - b.cost);
-        let try_state = working.pop().unwrap();
+        let try_state = working.pop().unwrap().0;
 
         if seen_states.contains_key(&try_state.state()) {
             continue;
@@ -370,12 +391,13 @@ fn find_best_moves(from: &Burrows) -> (u64, Vec<AMove>) {
         }
 
         // Otherwise, lets try all the moves from here.
-        let mut next_moves = try_state
+        for next in try_state
             .available_moves()
             .iter()
             .map(|m| move_pod(&try_state, m, false))
-            .collect::<Vec<Burrows>>();
-        working.append(&mut next_moves);
+        {
+            working.push(Reverse(next));
+        }
     }
 
     (best, best_moves)
@@ -436,13 +458,13 @@ fn move_distance(burrow: usize, above: usize) -> u64 {
     }) + 1) as u64
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 enum MoveDirection {
     In,
     Out,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 struct AMove {
     burrow: usize,
     depth: usize,
@@ -489,5 +511,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_data() {}
+    fn test_data() {
+        let burrows = Burrows::test();
+        let unfolded_burrows = burrows.unfold();
+
+        let (best_cost, _best_moves) = find_best_moves(&burrows);
+        let (best_cost_unfolded, _best_moves_unfolded) = find_best_moves(&unfolded_burrows);
+        assert_eq!(best_cost, 12521);
+        assert_eq!(best_cost_unfolded, 44169);
+    }
 }
