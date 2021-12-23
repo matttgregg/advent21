@@ -13,6 +13,7 @@ mod day2;
 mod day20;
 mod day21;
 mod day22;
+mod day23;
 mod day3;
 mod day4;
 mod day5;
@@ -55,5 +56,6 @@ pub fn days() -> Vec<Box<dyn DaySolver>> {
     days.push(Box::new(day20::Day {}));
     days.push(Box::new(day21::Day {}));
     days.push(Box::new(day22::Day {}));
+    days.push(Box::new(day23::Day {}));
     days
 }
