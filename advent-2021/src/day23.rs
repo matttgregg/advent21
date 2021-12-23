@@ -10,29 +10,23 @@ impl DaySolver for Day {
     fn solve(&self) -> DayResult {
         let start = SystemTime::now();
 
-        let mut burrows = Burrows::mine();
-        println!("Starting at:\n{}", burrows);
-        let (best_cost, best_moves) = best_cost(&burrows);
-        println!(
-            "Best solution costs {} in {} moves.",
-            best_cost,
-            best_moves.len()
-        );
+        let burrows = Burrows::mine();
+        let unfolded_burrows = burrows.unfold();
 
-        println!("[0] \n{}", burrows);
-        for (i, mv) in best_moves.iter().enumerate() {
-            println!("{}", mv);
-            burrows = move_pod(&burrows, mv);
-            println!("[{}] \n{}", i, burrows);
-        }
+        let (best_cost, _best_moves) = find_best_moves(&burrows);
+        let (best_cost_unfolded, _best_moves_unfolded) = find_best_moves(&unfolded_burrows);
 
         let timed = SystemTime::now().duration_since(start).unwrap();
-        let description = format!("Can get all the amphipods back for a cost of {}", best_cost);
+        let description = format!(
+            "Can get all the amphipods back for a cost of {}. After\
+        unfolding, minimum energy is {}",
+            best_cost, best_cost_unfolded
+        );
 
         DayResult {
             description,
             part1: format!("{}", best_cost),
-            part2: format!("{}", 0),
+            part2: format!("{}", best_cost_unfolded),
             timing_us: timed.as_micros(),
         }
     }
@@ -41,7 +35,7 @@ impl DaySolver for Day {
 // The burrow structure is quite complicated.
 struct Burrows {
     // There are four burrows, two deep. These are indexed.
-    burrows: [[Contents; 2]; 4],
+    burrows: [Vec<Contents>; 4],
     // There are seven places above where an amphipod may stop.
     above: [Contents; 7],
     // The cost taken to get to this configuration.
@@ -95,7 +89,8 @@ impl fmt::Display for Contents {
 
 impl std::fmt::Display for Burrows {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "############# [{}]", self.cost)?;
+        writeln!(f, "{} = {}", self.state(), self.cost)?;
+        writeln!(f, "#############")?;
         writeln!(
             f,
             "#{}{}.{}.{}.{}.{}{}#",
@@ -107,22 +102,19 @@ impl std::fmt::Display for Burrows {
             self.above[5],
             self.above[6],
         )?;
-        writeln!(
-            f,
-            "###{}#{}#{}#{}###",
-            self.burrows[0][0], self.burrows[1][0], self.burrows[2][0], self.burrows[3][0],
-        )?;
-        writeln!(
-            f,
-            "  #{}#{}#{}#{}#  ",
-            self.burrows[0][1], self.burrows[1][1], self.burrows[2][1], self.burrows[3][1],
-        )?;
+        for i in 0..self.burrows[0].len() {
+            writeln!(
+                f,
+                "###{}#{}#{}#{}###",
+                self.burrows[0][i], self.burrows[1][i], self.burrows[2][i], self.burrows[3][i],
+            )?;
+        }
         writeln!(f, "  #########  ")
     }
 }
 
 impl Burrows {
-    fn new(burrows: [[Contents; 2]; 4]) -> Self {
+    fn new(burrows: [Vec<Contents>; 4]) -> Self {
         Self {
             above: [Empty; 7],
             burrows,
@@ -133,29 +125,62 @@ impl Burrows {
 
     fn mine() -> Self {
         Burrows::new([
-            [Contents::B, Contents::D],
-            [Contents::C, Contents::D],
-            [Contents::C, Contents::A],
-            [Contents::B, Contents::A],
+            vec![Contents::B, Contents::D],
+            vec![Contents::C, Contents::D],
+            vec![Contents::C, Contents::A],
+            vec![Contents::B, Contents::A],
         ])
     }
 
     fn test() -> Self {
         Burrows::new([
-            [Contents::B, Contents::A],
-            [Contents::C, Contents::D],
-            [Contents::B, Contents::C],
-            [Contents::D, Contents::A],
+            vec![Contents::B, Contents::A],
+            vec![Contents::C, Contents::D],
+            vec![Contents::B, Contents::C],
+            vec![Contents::D, Contents::A],
         ])
     }
 
-    fn finished(&self) -> bool {
-        for (i, pod) in [Contents::A, Contents::B, Contents::C, Contents::D]
-            .iter()
-            .enumerate()
+    fn unfold(&self) -> Self {
+        // Unlfolding inserts the rows
+        //   #D#C#B#A#
+        //   #D#B#A#C#
+        let mut new_state = Self {
+            above: self.above,
+            cost: 0,
+            burrows: [vec![], vec![], vec![], vec![]],
+            moves: vec![],
+        };
+
+        for (i, to_add) in [
+            [Contents::D, Contents::D],
+            [Contents::C, Contents::B],
+            [Contents::B, Contents::A],
+            [Contents::A, Contents::C],
+        ]
+        .iter()
+        .enumerate()
         {
-            if !(self.burrows[i][0] == *pod && self.burrows[i][1] == *pod) {
-                return false;
+            new_state.burrows[i].push(self.burrows[i][0]);
+            for a in to_add {
+                new_state.burrows[i].push(*a);
+            }
+            new_state.burrows[i].push(self.burrows[i][1]);
+        }
+
+        new_state
+    }
+
+    fn finished(&self) -> bool {
+        // All burrows must be full, and all burrows must be home.
+        for i in 0..4 {
+            for b in &self.burrows[i] {
+                if *b == Contents::Empty {
+                    return false;
+                }
+                if b.home() != i {
+                    return false;
+                }
             }
         }
         true
@@ -214,28 +239,21 @@ impl Burrows {
         let mut moves = vec![];
         // Lets do the 'out' moves first.
         for burrow in 0..4 {
-            for depth in 0..=1 {
-                if self.burrows[burrow][depth] == Contents::Empty {
-                    // Nothing here to move.
+            for (depth, occupant) in self.burrows[burrow].iter().enumerate() {
+                if *occupant == Contents::Empty {
+                    // Empty!
                     continue;
                 }
 
-                if depth == 0
-                    // Both this and the pod below are home. (Otherwise might have to move 
-                    // for the pod below.)
-                    && self.burrows[burrow][0].home() == burrow
-                        && self.burrows[burrow][1].home() == burrow
-                {
-                    continue;
-                } else if depth == 1
-                    && (
-                        // The space above is occupied!
-                        self.burrows[burrow][0] != Contents::Empty
-                    // This pod is home. (We're not blocking the upper pod, so don't care.
-                        || self.burrows[burrow][1].home() == burrow
-                    )
-                {
-                    continue;
+                // If non-empty, if home and all below are home, we'll leave this burrow as is.
+                if occupant.home() == burrow {
+                    if self.burrows[burrow]
+                        .iter()
+                        .skip(depth + 1)
+                        .all(|u| u.home() == burrow)
+                    {
+                        break;
+                    }
                 }
 
                 // We have something that wants to move! Where can it go?
@@ -256,6 +274,9 @@ impl Burrows {
                         });
                     }
                 }
+
+                // We couldn't move from this burrow, so need to move to the next.
+                break;
             }
         }
 
@@ -271,68 +292,70 @@ impl Burrows {
                 continue;
             }
 
-            // Check the bottom.
-            if self.burrows[burrow][0] == Contents::Empty {
-                // We can move it to the bottom.
-                if self.burrows[burrow][1] == Contents::Empty {
+            // Find the next empty slot.
+            for (depth, occupant) in self.burrows[burrow].iter().enumerate().rev() {
+                if *occupant == Contents::Empty {
+                    // We've got a gap, so make a move.
                     moves.push(AMove {
                         burrow,
-                        depth: 1,
+                        depth,
                         above,
-                        cost: self.above[above].cost() * (1 + move_distance(burrow, above)),
+                        cost: self.above[above].cost()
+                            * (depth as u64 + move_distance(burrow, above)),
                         direction: MoveDirection::In,
                     });
-                } else if self.burrows[burrow][1].home() == burrow {
-                    // Only move it to the top, if the one underneath is already home.
-                    moves.push(AMove {
-                        burrow,
-                        depth: 0,
-                        above,
-                        cost: self.above[above].cost() * move_distance(burrow, above),
-                        direction: MoveDirection::In,
-                    });
+                    break;
+                } else if occupant.home() != burrow {
+                    // There's a non-home pod here, so can't move.
+                    break;
                 }
+                // There's a home pod here, so keep looking for a gap.
             }
         }
         moves
     }
+
+    fn state(&self) -> String {
+        format!(
+            "{}:{}",
+            self.above
+                .iter()
+                .map(|s| format!("{}", s))
+                .collect::<Vec<String>>()
+                .join(""),
+            self.burrows
+                .iter()
+                .map(|b| format!(
+                    "{}",
+                    b.iter()
+                        .map(|s| format!("{}", s))
+                        .collect::<Vec<String>>()
+                        .join(""),
+                ))
+                .collect::<Vec<String>>()
+                .join(":"),
+        )
+    }
 }
 
-fn best_cost(from: &Burrows) -> (u64, Vec<AMove>) {
+fn find_best_moves(from: &Burrows) -> (u64, Vec<AMove>) {
     let mut seen_states = HashMap::new();
     let mut working = from
         .available_moves()
         .iter()
-        .map(|m| move_pod(from, m))
+        .map(|m| move_pod(from, m, false))
         .collect::<Vec<Burrows>>();
     let mut best = u64::max_value();
     let mut best_moves = vec![];
-    let mut counter = 0;
-    let mut worst = 0;
 
     while !working.is_empty() {
-        counter += 1;
         working.sort_by_key(|b| u64::max_value() - b.cost);
         let try_state = working.pop().unwrap();
 
-        if seen_states.contains_key(&(try_state.burrows, try_state.above)) {
+        if seen_states.contains_key(&try_state.state()) {
             continue;
         }
-        seen_states.insert((try_state.burrows, try_state.above), true);
-
-        /*
-        println!("[{}] Checking {}", counter, try_state);
-
-        let mut ret = String::new();
-        std::io::stdin()
-            .read_line(&mut ret)
-            .expect("Failed to read from stdin");
-
-        if try_state.cost > worst {
-            worst = try_state.cost;
-            println!("Looking at costs: {}", worst);
-        }
-         */
+        seen_states.insert(try_state.state(), true);
 
         if try_state.cost >= best {
             // Already too expensive, so stop.
@@ -340,7 +363,6 @@ fn best_cost(from: &Burrows) -> (u64, Vec<AMove>) {
         }
 
         if try_state.finished() {
-            println!("Reached end state:\n{}", try_state);
             best = try_state.cost;
             best_moves = vec![AMove::none(); try_state.moves.len()];
             best_moves.clone_from_slice(&try_state.moves);
@@ -351,7 +373,7 @@ fn best_cost(from: &Burrows) -> (u64, Vec<AMove>) {
         let mut next_moves = try_state
             .available_moves()
             .iter()
-            .map(|m| move_pod(&try_state, m))
+            .map(|m| move_pod(&try_state, m, false))
             .collect::<Vec<Burrows>>();
         working.append(&mut next_moves);
     }
@@ -359,20 +381,28 @@ fn best_cost(from: &Burrows) -> (u64, Vec<AMove>) {
     (best, best_moves)
 }
 
-fn move_pod(state: &Burrows, m: &AMove) -> Burrows {
+fn move_pod(state: &Burrows, m: &AMove, caching: bool) -> Burrows {
     let mut new_state = Burrows {
-        burrows: state.burrows,
+        burrows: [vec![], vec![], vec![], vec![]],
         above: state.above,
         cost: state.cost + m.cost,
-        moves: vec![AMove::none(); state.moves.len()],
+        moves: vec![],
     };
+
+    for i in 0..4 {
+        new_state.burrows[i] = vec![Contents::Empty; state.burrows[i].len()];
+        new_state.burrows[i].clone_from_slice(&state.burrows[i]);
+    }
 
     // The move consists of swapping the two locations.
     new_state.burrows[m.burrow][m.depth] = state.above[m.above];
     new_state.above[m.above] = state.burrows[m.burrow][m.depth];
 
-    new_state.moves.clone_from_slice(&state.moves);
-    new_state.moves.push(m.clone());
+    if caching {
+        new_state.moves = vec![AMove::none(); state.moves.len()];
+        new_state.moves.clone_from_slice(&state.moves);
+        new_state.moves.push(m.clone());
+    }
 
     new_state
 }
@@ -435,24 +465,19 @@ impl AMove {
 
 impl fmt::Display for AMove {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let bottom_top = match self.depth {
-            0 => "top",
-            1 => "bottom",
-            _ => panic!("unexpected depth {}", self.depth),
-        };
         match self.direction {
             MoveDirection::Out => {
                 write!(
                     f,
-                    "Out of the {} of burrow {} to {}, at a cost of {}",
-                    bottom_top, self.burrow, self.above, self.cost
+                    "Out of the {} level of burrow {} to {}, at a cost of {}",
+                    self.depth, self.burrow, self.above, self.cost
                 )
             }
             MoveDirection::In => {
                 write!(
                     f,
-                    "Into the {} of burrow {} from {}, at a cost of {}",
-                    bottom_top, self.burrow, self.above, self.cost
+                    "Into the {} level of burrow {} from {}, at a cost of {}",
+                    self.depth, self.burrow, self.above, self.cost
                 )
             }
         }
